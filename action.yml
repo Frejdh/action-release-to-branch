@@ -1,0 +1,146 @@
+name: Maven build and test
+description: Action for building and testing maven repositories
+
+inputs:
+  java-version:
+    description: JDK version to use. Default is '17'.
+    required: false
+    default: '17'
+
+  java-distribution:
+    description: JDK distribution to use. Default is 'temurin'.
+    required: false
+    default: 'temurin'
+
+  cache-id:
+    description: ID (subkey) for the cache'
+    required: false
+    default: 'v1'
+
+  build-arguments:
+    description: Arguments for the maven build. Default 'mvn -B install -e [CUSTOM ARGS]'
+    required: false
+
+  project-framework:
+    description: Select what kind of framework the project uses
+    default: Maven
+#    options:
+#      - Maven
+#      - Gradle
+#      - NPM
+#      - PyPi
+
+  release-branch-enabled:
+    description: Set whether the artifact created should be released on a branch.
+    required: false
+    default: 'false'
+
+  commitish:
+    description: Git reference (branch/commit) to trigger the build on
+    required: false
+
+  ssh-key:
+    description: Only required when checking out another repository
+    required: false
+    default: ''
+
+  release-branch-repository:
+    description: If release branch is enabled, this will change the repository to be used. Default is the current repository
+    required: false
+    default: ''
+
+  release-branch-name-maven:
+    description: Release branch name for Maven artifacts
+    required: false
+
+  release-branch-name-gradle:
+    description: Release branch name for Gradle artifacts
+    required: false
+
+  release-branch-name-npm:
+    description: Release branch name for NPM (Node) packages
+    required: false
+
+  release-branch-name-pypi:
+    description: Release branch name for Python PIP packages
+    required: false
+
+
+runs:
+  using: composite
+  steps:
+    - name: Prepare environment
+      shell: bash
+      run: >
+        echo "LOCAL_REPOSITORY_DIR=~/local-repository" >> $GITHUB_ENV
+        echo "APP_REPO_DIR=application-repo" >> $GITHUB_ENV
+        echo "RELEASE_REPO_DIR=release-repo" >> $GITHUB_ENV
+        echo "PROJECT_FRAMEWORK=$(echo "${{ inputs.project-framework }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV"
+        cat "$GITHUB_ENV"
+    - name: Checkout branch code
+      uses: actions/checkout@v3
+      with:
+        path: "${{ env.APP_REPO_DIR }}"
+        ref: "${{ inputs.commitish }}"
+        persist-credentials: true
+    - name: Set up JDK ${{ inputs.java-version }} (${{ inputs.java-distribution }})
+      uses: actions/setup-java@v2
+      with:
+        java-version: ${{ inputs.java-version }}
+        distribution: ${{ inputs.java-distribution }}
+    - name: Set up cache for Maven repository
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository
+        key: maven-${{ inputs.cache-id }}-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          maven-
+    - name: Build Maven project and install artifact
+      if: inputs.project-framework == 'Maven'
+      shell: bash
+      working-directory: ./${{ env.APP_REPO_DIR }}
+      run: >
+        mkdir -p "${{ env.LOCAL_REPOSITORY_DIR }}" &&
+        mvn -B install -DlocalRepositoryPath="${{ env.LOCAL_REPOSITORY_DIR }}" -e ${{ inputs.build-arguments }}
+    - name: Checkout another repository to release on
+      if: inputs.release-branch-enabled == 'true'
+      uses: actions/checkout@v3
+      with:
+        path: "${{ env.RELEASE_REPO_DIR }}"
+        ssh-key: "${{ inputs.ssh-key }}"
+        repository: "${{ inputs.release-branch-repository }}"
+        ref: "${{ inputs.release-branch-name }}"
+    - name: Copy artifacts to branch
+      shell: bash
+      working-directory: ./${{ env.RELEASE_REPO_DIR }}
+      if: inputs.release-branch-enabled == 'true'
+      run: >
+        cp -r "${{ env.LOCAL_REPOSITORY_DIR }}/"* .
+        git add -u
+    - name: Create release commit
+      shell: bash
+      working-directory: ./${{ env.RELEASE_REPO_DIR }}
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add . && git commit -m "New release changes for ${{ github.event.repository.owner.name }}/${{ github.event.repository.name }}"
+    - name: Determine release branch
+      uses: actions/github-script@v6
+      with:
+        env:
+          projectFramework: "${{ inputs.project-framework }}"
+          mavenBranch: "${{ inputs.release-branch-name-maven }}"
+          gradleBranch: "${{ inputs.release-branch-name-gradle }}"
+          npmBranch: "${{ inputs.release-branch-name-npm }}"
+          pypiBranch: "${{ inputs.release-branch-name-pypi }}"
+        script: |
+          const script = require('./scripts/detect-release-branch.js')
+    - name: Push to release branch
+      if: inputs.release-branch-enabled == 'true'
+      uses: ad-m/github-push-action@v0.6.0
+      with:
+        repository: "${{ inputs.release-branch-repository }}"
+        branch: "${{ env.RELEASE_BRANCH }}"
+        github_token: "${{ inputs.ssh-key }}"
+        directory: "${{ env.RELEASE_REPO_DIR }}"
+        ssh: true
