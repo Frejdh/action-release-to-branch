@@ -40,11 +40,6 @@ inputs:
     description: Git reference (branch/commit) to trigger the build on
     required: false
 
-  release-branch-enabled:
-    description: Set whether the artifact created should be released on a branch.
-    required: false
-    default: 'false'
-
   release-branch-repository:
     description: If release branch is enabled, this will change the repository to be used. Default is the current repository
     required: false
@@ -72,7 +67,7 @@ runs:
   steps:
     - name: Prepare environment
       shell: bash
-      run: >
+      run: |
         echo "LOCAL_REPOSITORY_DIR=~/local-repository" >> $GITHUB_ENV
         echo "APP_REPO_DIR=application-repo" >> $GITHUB_ENV
         echo "RELEASE_REPO_DIR=release-repo" >> $GITHUB_ENV
@@ -104,7 +99,7 @@ runs:
         mkdir -p "${{ env.LOCAL_REPOSITORY_DIR }}" &&
         mvn -B install -DlocalRepositoryPath="${{ env.LOCAL_REPOSITORY_DIR }}" -e ${{ inputs.build-arguments }}
     - name: Checkout another repository/branch to release on
-      if: inputs.release-branch-enabled == 'true'
+      if: inputs.release-branch-repository != ''
       uses: actions/checkout@v3
       with:
         path: "${{ env.RELEASE_REPO_DIR }}"
@@ -116,7 +111,6 @@ runs:
     - name: Copy artifacts to branch
       shell: bash
       working-directory: ./${{ env.RELEASE_REPO_DIR }}
-      if: inputs.release-branch-enabled == 'true'
       run: >
         cp -r "${{ env.LOCAL_REPOSITORY_DIR }}/"* .
         git add -u
@@ -148,7 +142,6 @@ runs:
           const script = require("${{ github.action_path }}/scripts/detect-release-branch.js");
           script({core});
     - name: Push to release branch
-      if: inputs.release-branch-enabled == 'true'
       uses: ad-m/github-push-action@v0.6.0
       with:
         repository: "${{ inputs.release-branch-repository }}"
