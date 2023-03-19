@@ -2,6 +2,12 @@ name: Maven build and test
 description: Action for building and testing maven repositories
 
 inputs:
+
+  github-token:
+    description: Either use `secrets.GITHUB_TOKEN` for the same repository. Or for other repositories, use a personal access token.
+    required: true
+    default: ''
+
   java-version:
     description: JDK version to use. Default is '17'.
     required: false
@@ -30,19 +36,14 @@ inputs:
 #      - NPM
 #      - PyPi
 
-  release-branch-enabled:
-    description: Set whether the artifact created should be released on a branch.
-    required: false
-    default: 'false'
-
   commitish:
     description: Git reference (branch/commit) to trigger the build on
     required: false
 
-  ssh-key:
-    description: Only required when checking out another repository
+  release-branch-enabled:
+    description: Set whether the artifact created should be released on a branch.
     required: false
-    default: ''
+    default: 'false'
 
   release-branch-repository:
     description: If release branch is enabled, this will change the repository to be used. Default is the current repository
@@ -75,7 +76,7 @@ runs:
         echo "LOCAL_REPOSITORY_DIR=~/local-repository" >> $GITHUB_ENV
         echo "APP_REPO_DIR=application-repo" >> $GITHUB_ENV
         echo "RELEASE_REPO_DIR=release-repo" >> $GITHUB_ENV
-        echo "PROJECT_FRAMEWORK=$(echo "${{ inputs.project-framework }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV"
+        echo PROJECT_FRAMEWORK="$(echo "${{ inputs.project-framework }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
         cat "$GITHUB_ENV"
     - name: Checkout branch code
       uses: actions/checkout@v3
@@ -96,20 +97,22 @@ runs:
         restore-keys: |
           maven-
     - name: Build Maven project and install artifact
-      if: inputs.project-framework == 'Maven'
+      if: env.PROJECT_FRAMEWORK == 'maven'
       shell: bash
       working-directory: ./${{ env.APP_REPO_DIR }}
       run: >
         mkdir -p "${{ env.LOCAL_REPOSITORY_DIR }}" &&
         mvn -B install -DlocalRepositoryPath="${{ env.LOCAL_REPOSITORY_DIR }}" -e ${{ inputs.build-arguments }}
-    - name: Checkout another repository to release on
+    - name: Checkout another repository/branch to release on
       if: inputs.release-branch-enabled == 'true'
       uses: actions/checkout@v3
       with:
         path: "${{ env.RELEASE_REPO_DIR }}"
-        ssh-key: "${{ inputs.ssh-key }}"
+        token: "${{ inputs.github-token }}"
         repository: "${{ inputs.release-branch-repository }}"
         ref: "${{ inputs.release-branch-name }}"
+        persist-credentials: false
+        fetch-depth: 0
     - name: Copy artifacts to branch
       shell: bash
       working-directory: ./${{ env.RELEASE_REPO_DIR }}
@@ -117,30 +120,38 @@ runs:
       run: >
         cp -r "${{ env.LOCAL_REPOSITORY_DIR }}/"* .
         git add -u
+    - name: Determine release version
+      uses: actions/github-script@v6
+      env:
+        projectFramework: "${{ inputs.project-framework }}"
+      with:
+        script: |
+          const script = require("${{ github.action_path }}/scripts/detect-release-version.js");
+          script({core, exec});
     - name: Create release commit
       shell: bash
       working-directory: ./${{ env.RELEASE_REPO_DIR }}
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git add . && git commit -m "New release changes for ${{ github.event.repository.owner.name }}/${{ github.event.repository.name }}"
+        git add . && git commit -m "New release build [${{ env.RELEASE_VERSION }}] for ${{ github.event.repository.owner.name }}/${{ github.event.repository.name }}"
     - name: Determine release branch
       uses: actions/github-script@v6
+      env:
+        projectFramework: "${{ inputs.project-framework }}"
+        mavenBranch: "${{ inputs.release-branch-name-maven }}"
+        gradleBranch: "${{ inputs.release-branch-name-gradle }}"
+        npmBranch: "${{ inputs.release-branch-name-npm }}"
+        pypiBranch: "${{ inputs.release-branch-name-pypi }}"
       with:
-        env:
-          projectFramework: "${{ inputs.project-framework }}"
-          mavenBranch: "${{ inputs.release-branch-name-maven }}"
-          gradleBranch: "${{ inputs.release-branch-name-gradle }}"
-          npmBranch: "${{ inputs.release-branch-name-npm }}"
-          pypiBranch: "${{ inputs.release-branch-name-pypi }}"
         script: |
-          const script = require('./scripts/detect-release-branch.js')
+          const script = require("${{ github.action_path }}/scripts/detect-release-branch.js");
+          script({core});
     - name: Push to release branch
       if: inputs.release-branch-enabled == 'true'
       uses: ad-m/github-push-action@v0.6.0
       with:
         repository: "${{ inputs.release-branch-repository }}"
         branch: "${{ env.RELEASE_BRANCH }}"
-        github_token: "${{ inputs.ssh-key }}"
+        github_token: "${{ inputs.github-token }}"
         directory: "${{ env.RELEASE_REPO_DIR }}"
-        ssh: true
