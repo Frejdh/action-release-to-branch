@@ -1,6 +1,8 @@
+import * as core from '@actions/core';
+
 // https://github.com/actions/github-script
 
-module.exports = () => {
+export default async function script() {
     const {
         projectFramework,
         mavenBranch,

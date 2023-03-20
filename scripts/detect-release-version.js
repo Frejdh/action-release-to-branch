@@ -2,7 +2,7 @@ import * as core from '@actions/core';
 import {execAndGetOutput} from "./util/cmd";
 
 // https://github.com/actions/github-script
-module.exports = async () => {
+export default async function script() {
     const {
         projectFramework
     } = process.env;

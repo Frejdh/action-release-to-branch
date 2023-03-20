@@ -4,7 +4,7 @@ import {NpmArtifact} from "./artifact/npm-artifact";
 import {PyPiArtifact} from "./artifact/pypi-artifact";
 
 // https://github.com/actions/github-script
-module.exports = async () => {
+export default async function script() {
     const {
         projectFramework
     } = process.env;
@@ -31,6 +31,6 @@ module.exports = async () => {
     const filesToInspect = await frameworkImpl.getFilesToInspect();
     const artifactsToCopy = await frameworkImpl.getArtifactsToCopy(filesToInspect);
     await frameworkImpl.copyArtifacts(artifactsToCopy);
-
 }
+
 
