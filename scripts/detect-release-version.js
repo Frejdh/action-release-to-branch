@@ -1,5 +1,5 @@
 import * as core from '@actions/core';
-import {execAndGetOutput} from "./util/cmd";
+import {execAndGetOutput} from "./util/cmd.js";
 
 // https://github.com/actions/github-script
 export default async function script() {

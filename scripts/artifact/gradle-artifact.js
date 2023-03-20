@@ -1,7 +1,5 @@
-import {execAndGetOutput, findFilesMatchingPattern} from "../util/cmd";
-import {AbstractArtifact} from "./abstract-artifact";
-import {Artifact} from "./model/artifact";
-import * as core from '@actions/core';
+import {findFilesMatchingPattern} from "../util/cmd.js";
+import {AbstractArtifact} from "./abstract-artifact.js";
 
 
 export class GradleArtifact extends AbstractArtifact {

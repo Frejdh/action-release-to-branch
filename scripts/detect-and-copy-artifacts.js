@@ -1,7 +1,7 @@
-import {MavenArtifact} from "./artifact/maven-artifact";
-import {GradleArtifact} from "./artifact/gradle-artifact";
-import {NpmArtifact} from "./artifact/npm-artifact";
-import {PyPiArtifact} from "./artifact/pypi-artifact";
+import {MavenArtifact} from "./artifact/maven-artifact.js";
+import {GradleArtifact} from "./artifact/gradle-artifact.js";
+import {NpmArtifact} from "./artifact/npm-artifact.js";
+import {PyPiArtifact} from "./artifact/pypi-artifact.js";
 
 // https://github.com/actions/github-script
 export default async function script() {

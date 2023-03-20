@@ -1,6 +1,6 @@
-import {execAndGetOutput, findFilesMatchingPattern} from "../util/cmd";
-import {AbstractArtifact} from "./abstract-artifact";
-import {Artifact} from "./model/artifact";
+import {execAndGetOutput, findFilesMatchingPattern} from "../util/cmd.js";
+import {AbstractArtifact} from "./abstract-artifact.js";
+import {Artifact} from "./model/artifact.js";
 import * as core from '@actions/core';
 
 
