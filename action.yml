@@ -108,11 +108,10 @@ runs:
         persist-credentials: false
         fetch-depth: 0
     - name: Copy artifacts to branch
-      working-directory: ./${{ env.RELEASE_REPO_DIR }}
       uses: actions/github-script@v6
       env:
         projectFramework: "${{ inputs.project-framework }}"
-        outputDirectory: '.'
+        workingDirectory: '${{ env.RELEASE_REPO_DIR }}'
       with:
         script: |
           const script = require("${{ github.action_path }}/scripts/detect-and-copy-artifacts.js");

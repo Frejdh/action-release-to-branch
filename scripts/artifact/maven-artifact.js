@@ -35,10 +35,11 @@ export class MavenArtifact extends AbstractArtifact {
      */
     async copyArtifacts(artifacts) {
         const m2Directory = await execAndGetOutput('mvn', ['help:evaluate', '-Dexpression=settings.localRepository', '-q', '-DforceStdout']);
+        const { workingDirectory } = process.env;
         for (let artifact of artifacts) {
             const artifactDirectory = artifact.toString().replace(':', '/');
-            await execAndGetOutput('mkdir', ['-p', `"${artifactDirectory}"`]);
-            await execAndGetOutput('cp ', [`"${m2Directory}/${artifactDirectory}"/*`, `${artifactDirectory}`]);
+            await execAndGetOutput('mkdir', ['-p', `"${workingDirectory || '.'}/${artifactDirectory}"`]);
+            await execAndGetOutput('cp ', [`"${m2Directory}/${artifactDirectory}"/*`, `${workingDirectory || '.'}${artifactDirectory}`]);
             core.debug(`Copied artifact files for [${artifact.toString()}`);
         }
     }

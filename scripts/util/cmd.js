@@ -38,6 +38,7 @@ export async function execAndGetOutput(baseCmd, argsArray = []) {
  * @return {Promise<string[]>}
  */
 export async function findFilesMatchingPattern(pattern) {
-    const allFiles = await execAndGetOutput('find', ['.', '-type', 'f', '-iname', `"${pattern}"`]);
+    const { workingDirectory } = process.env;
+    const allFiles = await execAndGetOutput('find', [`"${workingDirectory | '.'}"`, '-type', 'f', '-iname', `"${pattern}"`]);
     return allFiles?.split('\n').filter(file => file);
 }
