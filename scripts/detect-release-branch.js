@@ -1,6 +1,6 @@
 // https://github.com/actions/github-script
 
-module.exports = ({core}) => {
+module.exports = () => {
     const {
         projectFramework,
         mavenBranch,

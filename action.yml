@@ -97,9 +97,8 @@ runs:
       working-directory: ./${{ env.APP_REPO_DIR }}
       run: >
         mkdir -p "${{ env.LOCAL_REPOSITORY_DIR }}" &&
-        mvn -B install -DlocalRepositoryPath="${{ env.LOCAL_REPOSITORY_DIR }}" -e ${{ inputs.build-arguments }}
-    - name: Checkout another repository/branch to release on
-      if: inputs.release-branch-repository != ''
+        mvn -B install source:jar javadoc:jar install -Dencoding="UTF-8" -DcreateChecksum=true -DadditionalJOption="-Xdoclint:none" -e ${{ inputs.build-arguments }}
+    - name: Checkout repository/branch to release on
       uses: actions/checkout@v3
       with:
         path: "${{ env.RELEASE_REPO_DIR }}"
@@ -109,11 +108,15 @@ runs:
         persist-credentials: false
         fetch-depth: 0
     - name: Copy artifacts to branch
-      shell: bash
       working-directory: ./${{ env.RELEASE_REPO_DIR }}
-      run: >
-        cp -r "${{ env.LOCAL_REPOSITORY_DIR }}/"* .
-        git add -u
+      uses: actions/github-script@v6
+      env:
+        projectFramework: "${{ inputs.project-framework }}"
+        outputDirectory: '.'
+      with:
+        script: |
+          const script = require("${{ github.action_path }}/scripts/detect-and-copy-artifacts.js");
+          script();
     - name: Determine release version
       uses: actions/github-script@v6
       env:
@@ -121,7 +124,7 @@ runs:
       with:
         script: |
           const script = require("${{ github.action_path }}/scripts/detect-release-version.js");
-          script({core, exec});
+          script();
     - name: Create release commit
       shell: bash
       working-directory: ./${{ env.RELEASE_REPO_DIR }}
@@ -140,7 +143,7 @@ runs:
       with:
         script: |
           const script = require("${{ github.action_path }}/scripts/detect-release-branch.js");
-          script({core});
+          script();
     - name: Push to release branch
       uses: ad-m/github-push-action@v0.6.0
       with:
