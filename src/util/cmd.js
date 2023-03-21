@@ -35,10 +35,14 @@ export async function execAndGetOutput(baseCmd, argsArray = []) {
 /**
  *
  * @param {string} pattern (bash 'find' syntax)
+ * @param {string?} targetDirectory Optional directory to base the search on. Relative path from working directory,
  * @return {Promise<string[]>}
  */
-export async function findFilesMatchingPattern(pattern) {
-    const { workingDirectory } = process.env;
-    const allFiles = await execAndGetOutput('find', [`"${workingDirectory || '.'}"`, '-type', 'f', '-iname', `"${pattern}"`]);
+export async function findFilesMatchingPattern(pattern, targetDirectory) {
+    if (!targetDirectory) {
+        targetDirectory = process?.env?.workingDirectory || '.';
+    }
+    await execAndGetOutput('echo', ['"Searching based on directory: [$(pwd)]"'])
+    const allFiles = await execAndGetOutput('find', [`"${targetDirectory || '.'}"`, '-type', 'f', '-iname', `"${pattern}"`]);
     return allFiles?.split('\n').filter(file => file);
 }

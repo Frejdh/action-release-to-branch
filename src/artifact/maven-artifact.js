@@ -2,6 +2,7 @@ import {execAndGetOutput, findFilesMatchingPattern} from "../util/cmd.js";
 import {AbstractArtifact} from "./abstract-artifact.js";
 import {Artifact} from "./model/artifact.js";
 import * as core from '@actions/core';
+import {exec} from "@actions/exec";
 
 
 export class MavenArtifact extends AbstractArtifact {
@@ -34,13 +35,17 @@ export class MavenArtifact extends AbstractArtifact {
      * @param {Artifact[]} artifacts
      */
     async copyArtifacts(artifacts) {
-        const m2Directory = await execAndGetOutput('mvn', ['help:evaluate', '-Dexpression=settings.localRepository', '-q', '-DforceStdout']);
+        const m2RepositoryDirectory = await execAndGetOutput('mvn', ['help:evaluate', '-Dexpression=settings.localRepository', '-q', '-DforceStdout']);
         const { workingDirectory } = process.env;
         for (let artifact of artifacts) {
-            const artifactDirectory = artifact.toString().replace(':', '/');
-            await execAndGetOutput('mkdir', ['-p', `"${workingDirectory || '.'}/${artifactDirectory}"`]);
-            await execAndGetOutput('cp ', [`"${m2Directory}/${artifactDirectory}"/*`, `${workingDirectory || '.'}${artifactDirectory}`]);
-            core.debug(`Copied artifact files for [${artifact.toString()}`);
+            const artifactRelativeDirectory = artifact.toString().replace(':', '/');
+            const targetDirectory = await execAndGetOutput('readlink', ['-f', `${workingDirectory || '.'}/${artifactRelativeDirectory}`]);
+
+            await execAndGetOutput('mkdir', ['-p', `"${targetDirectory}"`]);
+            await execAndGetOutput('cp ', [`"${m2RepositoryDirectory}/${artifactRelativeDirectory}"/*`, `"${targetDirectory}"`]);qw
+
+            core.debug(`Copied artifact files for [${artifact.toString()}`);  // Not working???
+            await execAndGetOutput('echo', [`"Copied artifact files for [${artifact.toString()}] to [${targetDirectory}]"`])
         }
     }
 }

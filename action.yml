@@ -111,7 +111,7 @@ runs:
       uses: actions/github-script@v6
       env:
         projectFramework: "${{ inputs.project-framework }}"
-        workingDirectory: '${{ env.RELEASE_REPO_DIR }}'
+        workingDirectory: "${{ env.RELEASE_REPO_DIR }}"
       with:
         script: |
           const { default: script } = await import("${{ github.action_path }}/src/find-and-copy-artifacts.js");
