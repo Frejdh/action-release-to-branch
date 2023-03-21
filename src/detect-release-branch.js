@@ -1,4 +1,5 @@
 import * as core from '@actions/core';
+import {log} from "./util/cmd";
 
 // https://github.com/actions/github-script
 
@@ -26,5 +27,8 @@ export default async function script() {
             releaseBranch = pypiBranch || 'pypi'
             break;
     }
+
+    const envVariable = 'RELEASE_BRANCH';
+    await log(`Setting environment variable ${envVariable}=${releaseBranch}`)
     core.exportVariable('RELEASE_BRANCH', releaseBranch)
 }

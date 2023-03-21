@@ -103,7 +103,16 @@ runs:
         mkdir -p "${{ env.LOCAL_REPOSITORY_DIR }}" &&
         mvn -B install source:jar javadoc:jar install -Dencoding="UTF-8" -DcreateChecksum=true -DadditionalJOption="-Xdoclint:none" -e ${{ inputs.build-arguments }}
 
-    - name: Determine and set release branch
+    - name: Checkout repository to release on
+      uses: actions/checkout@v3
+      with:
+        path: "${{ env.RELEASE_REPO_DIR }}"
+        token: "${{ inputs.github-token }}"
+        repository: "${{ inputs.release-branch-repository }}"
+        persist-credentials: false
+        fetch-depth: 0
+
+    - name: Determine release branch
       uses: actions/github-script@v6
       env:
         projectFramework: "${{ inputs.project-framework }}"
@@ -116,15 +125,29 @@ runs:
           const { default: script } = await import("${{ github.action_path }}/src/detect-release-branch.js");
           await script();
 
-    - name: Checkout repository/branch to release on
-      uses: actions/checkout@v3
+    - name: Switch to release branch and create if missing
+      shell: bash
+      working-directory: ./${{ env.RELEASE_REPO_DIR }}
+      run: |
+        RELEASE_BRANCH_CREATED=false
+        if [ $(git rev-parse --verify "${{ env.RELEASE_BRANCH }}" 2>/dev/null) ]; then
+          git checkout "${{ env.RELEASE_BRANCH }}"
+        else
+          RELEASE_BRANCH_CREATED=true
+          git switch --orphan "${{ env.RELEASE_BRANCH }}"
+          git clean -fd
+          git commit --allow-empty -m "Initial commit on release branch"
+        fi
+        echo "RELEASE_BRANCH_CREATED=${RELEASE_BRANCH_CREATED}" >> $GITHUB_ENV
+
+    - name: Push new release branch to remote
+      if: env.RELEASE_BRANCH_CREATED == 'true'
+      uses: ad-m/github-push-action@v0.6.0
       with:
-        path: "${{ env.RELEASE_REPO_DIR }}"
-        token: "${{ inputs.github-token }}"
         repository: "${{ inputs.release-branch-repository }}"
-        ref: "${{ env.RELEASE_BRANCH }}"
-        persist-credentials: false
-        fetch-depth: 0
+        branch: "${{ env.RELEASE_BRANCH }}"
+        github_token: "${{ inputs.github-token }}"
+        directory: "${{ env.RELEASE_REPO_DIR }}"
 
     - name: Copy artifacts to branch
       uses: actions/github-script@v6
