@@ -58,7 +58,7 @@ export async function getWorkingDirectory() {
  */
 export async function findFilesMatchingPattern(pattern, targetDirectory) {
     if (!targetDirectory) {
-        targetDirectory = process?.env?.workingDirectory || '.';
+        targetDirectory = await getCurrentDirectory();
     }
     await execAndGetOutput('echo', [`"Searching based on directory: [${await getCurrentDirectory()}]"`])
     const allFiles = await execAndGetOutput('find', [`"${targetDirectory || '.'}"`, '-type', 'f', '-iname', `"${pattern}"`]);
