@@ -1,5 +1,5 @@
 import * as core from '@actions/core';
-import {log} from "./util/cmd";
+import {log} from "./util/cmd.js";
 
 // https://github.com/actions/github-script
 
