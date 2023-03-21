@@ -189,7 +189,6 @@ gradle-app.setting
 nbproject/private/
 buildTool/
 nbbuild/
-dist/
 nbdist/
 .nb-gradle/
 
@@ -233,7 +232,6 @@ DerivedData
 
 # node.js
 #
-*/node_modules/*
 */npm-debug.log
 */yarn-error.log
 
