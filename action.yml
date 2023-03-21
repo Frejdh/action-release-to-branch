@@ -130,6 +130,9 @@ runs:
       working-directory: ./${{ env.RELEASE_REPO_DIR }}
       run: |
         RELEASE_BRANCH_CREATED=false
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+
         if [ $(git rev-parse --verify "${{ env.RELEASE_BRANCH }}" 2>/dev/null) ]; then
           git checkout "${{ env.RELEASE_BRANCH }}"
         else
