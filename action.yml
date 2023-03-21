@@ -73,17 +73,20 @@ runs:
         echo "RELEASE_REPO_DIR=release-repo" >> $GITHUB_ENV
         echo PROJECT_FRAMEWORK="$(echo "${{ inputs.project-framework }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
         cat "$GITHUB_ENV"
+
     - name: Checkout branch code
       uses: actions/checkout@v3
       with:
         path: "${{ env.APP_REPO_DIR }}"
         ref: "${{ inputs.commitish }}"
         persist-credentials: true
+
     - name: Set up JDK ${{ inputs.java-version }} (${{ inputs.java-distribution }})
       uses: actions/setup-java@v2
       with:
         java-version: ${{ inputs.java-version }}
         distribution: ${{ inputs.java-distribution }}
+
     - name: Set up cache for Maven repository
       uses: actions/cache@v2
       with:
@@ -91,6 +94,7 @@ runs:
         key: maven-${{ inputs.cache-id }}-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
           maven-
+
     - name: Build Maven project and install artifact
       if: env.PROJECT_FRAMEWORK == 'maven'
       shell: bash
@@ -98,40 +102,8 @@ runs:
       run: >
         mkdir -p "${{ env.LOCAL_REPOSITORY_DIR }}" &&
         mvn -B install source:jar javadoc:jar install -Dencoding="UTF-8" -DcreateChecksum=true -DadditionalJOption="-Xdoclint:none" -e ${{ inputs.build-arguments }}
-    - name: Checkout repository/branch to release on
-      uses: actions/checkout@v3
-      with:
-        path: "${{ env.RELEASE_REPO_DIR }}"
-        token: "${{ inputs.github-token }}"
-        repository: "${{ inputs.release-branch-repository }}"
-        ref: "${{ inputs.release-branch-name }}"
-        persist-credentials: false
-        fetch-depth: 0
-    - name: Copy artifacts to branch
-      uses: actions/github-script@v6
-      env:
-        projectFramework: "${{ inputs.project-framework }}"
-        workingDirectory: "${{ env.RELEASE_REPO_DIR }}"
-      with:
-        script: |
-          const { default: script } = await import("${{ github.action_path }}/src/find-and-copy-artifacts.js");
-          await script();
-    - name: Determine release version
-      uses: actions/github-script@v6
-      env:
-        projectFramework: "${{ inputs.project-framework }}"
-      with:
-        script: |
-          const { default: script } = await import("${{ github.action_path }}/src/detect-release-version.js");
-          await script();
-    - name: Create release commit
-      shell: bash
-      working-directory: ./${{ env.RELEASE_REPO_DIR }}
-      run: |
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
-        git add . && git commit -m "New release build [${{ env.RELEASE_VERSION }}] for ${{ github.event.repository.owner.name }}/${{ github.event.repository.name }}"
-    - name: Determine release branch
+
+    - name: Determine and set release branch
       uses: actions/github-script@v6
       env:
         projectFramework: "${{ inputs.project-framework }}"
@@ -143,6 +115,35 @@ runs:
         script: |
           const { default: script } = await import("${{ github.action_path }}/src/detect-release-branch.js");
           await script();
+
+    - name: Checkout repository/branch to release on
+      uses: actions/checkout@v3
+      with:
+        path: "${{ env.RELEASE_REPO_DIR }}"
+        token: "${{ inputs.github-token }}"
+        repository: "${{ inputs.release-branch-repository }}"
+        ref: "${{ env.RELEASE_BRANCH }}"
+        persist-credentials: false
+        fetch-depth: 0
+
+    - name: Copy artifacts to branch
+      uses: actions/github-script@v6
+      env:
+        projectFramework: "${{ inputs.project-framework }}"
+        workingDirectory: "${{ env.RELEASE_REPO_DIR }}"
+      with:
+        script: |
+          const { default: script } = await import("${{ github.action_path }}/src/find-and-copy-artifacts.js");
+          await script();
+
+    - name: Create release commit
+      shell: bash
+      working-directory: ./${{ env.RELEASE_REPO_DIR }}
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add . && git commit -m "New release build [${{ env.RELEASE_VERSION }}] for ${{ github.event.repository.owner.name }}/${{ github.event.repository.name }}"
+
     - name: Push to release branch
       uses: ad-m/github-push-action@v0.6.0
       with:

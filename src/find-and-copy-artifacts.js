@@ -2,6 +2,7 @@ import {MavenArtifact} from "./artifact/maven-artifact.js";
 import {GradleArtifact} from "./artifact/gradle-artifact.js";
 import {NpmArtifact} from "./artifact/npm-artifact.js";
 import {PyPiArtifact} from "./artifact/pypi-artifact.js";
+import * as core from "@actions/core";
 
 // https://github.com/actions/github-script
 export default async function script() {
@@ -30,7 +31,12 @@ export default async function script() {
 
     const filesToInspect = await frameworkImpl.getFilesToInspect();
     const artifactsToCopy = await frameworkImpl.getArtifactsToCopy(filesToInspect);
+    if (!artifactsToCopy?.length) {
+        throw new Error('No artifacts found');
+    }
     await frameworkImpl.copyArtifacts(artifactsToCopy);
+
+    core.exportVariable('RELEASE_VERSION', artifactsToCopy[0].version);
 }
 
 
