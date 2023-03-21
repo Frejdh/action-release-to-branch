@@ -26,7 +26,7 @@ export class MavenArtifact extends AbstractArtifact {
             const version = await execAndGetOutput('mvn', ['help:evaluate', '-Dexpression=project.version', '-q', '-DforceStdout', '-f', pomFile]);
 
             const artifact = new Artifact(groupId, artifactId, version);
-            await log(`Resolved artifact [${artifact.toString()}]]`);
+            await log(`Resolved artifact [${artifact.toString()}]`);
             artifacts.push(artifact)
         }
 
@@ -39,7 +39,7 @@ export class MavenArtifact extends AbstractArtifact {
     async copyArtifacts(artifacts) {
         const m2RepositoryDirectory = await execAndGetOutput('mvn', ['help:evaluate', '-Dexpression=settings.localRepository', '-q', '-DforceStdout']);
         for (let artifact of artifacts) {
-            const artifactRelativeDirectory = artifact.toString().replace(':', '/');
+            const artifactRelativeDirectory = artifact.toString().replaceAll(/[.:]/ig, '/');
             const targetDirectory = `${await getWorkingDirectory()}/${artifactRelativeDirectory}`;
 
             await execAndGetOutput('mkdir', ['-p', `${targetDirectory}`]);

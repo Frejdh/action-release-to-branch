@@ -24,11 +24,11 @@ export class Artifact {
     }
 
     get artifactId() {
-        return this.#groupId;
+        return this.#artifactId;
     }
 
     get version() {
-        return this.#groupId;
+        return this.#version;
     }
 
     toString() {
