@@ -6,11 +6,7 @@ gui/dist/
 gui/bazel-out
 gui/integration/bazel/bazel-*
 *.log
-gui/node_modules
-node_modules/*
-package-lock.json
 gui/www
-gui/package-lock.json
 gui/node
 
 ### Cordova ###
