@@ -14,7 +14,7 @@ export default async function script() {
             commandOutput = await execAndGetOutput('mvn', [
                 '-q',
                 '-Dexec.executable="echo"',
-                '-Dexec.args="${project.version}"',
+                '-Dexec.args=${project.version}',
                 '--non-recursive',
                 'exec:exec'
             ]);

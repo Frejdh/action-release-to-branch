@@ -52,7 +52,7 @@ export async function getWorkingDirectory() {
 
 /**
  *
- * @param {string} pattern (bash 'find' syntax)
+ * @param {string} pattern bash 'find' -iname syntax
  * @param {string?} targetDirectory Optional directory to base the search on. Relative path from working directory,
  * @return {Promise<string[]>}
  */
@@ -60,7 +60,7 @@ export async function findFilesMatchingPattern(pattern, targetDirectory) {
     if (!targetDirectory) {
         targetDirectory = await getWorkingDirectory();
     }
-    await execAndGetOutput('echo', [`"Searching based on directory: [${await getWorkingDirectory()}]"`])
-    const allFiles = await execAndGetOutput('find', [`"${targetDirectory || '.'}"`, '-type', 'f', '-iname', `"${pattern}"`]);
+    await execAndGetOutput('echo', [`Searching based on directory: [${await getWorkingDirectory()}]`])
+    const allFiles = await execAndGetOutput('find', [`${targetDirectory || '.'}`, '-type', 'f', '-iname', `${pattern}`]);
     return allFiles?.split('\n').filter(file => file);
 }

@@ -40,11 +40,11 @@ export class MavenArtifact extends AbstractArtifact {
             const artifactRelativeDirectory = artifact.toString().replace(':', '/');
             const targetDirectory = `${await getWorkingDirectory()}}/${artifactRelativeDirectory}`;
 
-            await execAndGetOutput('mkdir', ['-p', `"${targetDirectory}"`]);
-            await execAndGetOutput('cp ', [`"${m2RepositoryDirectory}/${artifactRelativeDirectory}"/*`, `"${targetDirectory}"`]);qw
+            await execAndGetOutput('mkdir', ['-p', `${targetDirectory}`]);
+            await execAndGetOutput('cp ', ['-r', `${m2RepositoryDirectory}/${artifactRelativeDirectory}`, `${targetDirectory}`]);
 
             core.debug(`Copied artifact files for [${artifact.toString()}`);  // Not working???
-            await execAndGetOutput('echo', [`"Copied artifact files for [${artifact.toString()}] to [${targetDirectory}]"`])
+            await execAndGetOutput('echo', [`Copied artifact files for [${artifact.toString()}] to [${targetDirectory}]`])
         }
     }
 }
