@@ -114,16 +114,16 @@ runs:
         workingDirectory: '${{ env.RELEASE_REPO_DIR }}'
       with:
         script: |
-          const { script } = await import("${{ github.action_path }}/scripts/detect-and-copy-artifacts.js");
-          script();
+          const { default: script } = await import("${{ github.action_path }}/src/find-and-copy-artifacts.js");
+          await script();
     - name: Determine release version
       uses: actions/github-script@v6
       env:
         projectFramework: "${{ inputs.project-framework }}"
       with:
         script: |
-          const { script } = await import("${{ github.action_path }}/scripts/detect-release-version.js");
-          script();
+          const { default: script } = await import("${{ github.action_path }}/src/detect-release-version.js");
+          await script();
     - name: Create release commit
       shell: bash
       working-directory: ./${{ env.RELEASE_REPO_DIR }}
@@ -141,8 +141,8 @@ runs:
         pypiBranch: "${{ inputs.release-branch-name-pypi }}"
       with:
         script: |
-          const { script } = await import("${{ github.action_path }}/scripts/detect-release-branch.js");
-          script();
+          const { default: script } = await import("${{ github.action_path }}/src/detect-release-branch.js");
+          await script();
     - name: Push to release branch
       uses: ad-m/github-push-action@v0.6.0
       with:
