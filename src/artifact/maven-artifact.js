@@ -1,8 +1,7 @@
-import {execAndGetOutput, findFilesMatchingPattern, getWorkingDirectory} from "../util/cmd.js";
+import {execAndGetOutput, findFilesMatchingPattern, getWorkingDirectory, log} from "../util/cmd.js";
 import {AbstractArtifact} from "./abstract-artifact.js";
 import {Artifact} from "./model/artifact.js";
 import * as core from '@actions/core';
-import {exec} from "@actions/exec";
 
 
 export class MavenArtifact extends AbstractArtifact {
@@ -22,10 +21,13 @@ export class MavenArtifact extends AbstractArtifact {
         const artifacts = []
 
         for (let pomFile of filesToInspect) {
-            let commandOutput = await execAndGetOutput('mvn', ['help:evaluate', '-Dexpression=project.groupId', '-q', '-DforceStdout', '-f', pomFile]);
-            commandOutput += await execAndGetOutput('mvn', ['help:evaluate', '-Dexpression=project.artifactId', '-q', '-DforceStdout', '-f', pomFile]);
-            commandOutput += await execAndGetOutput('mvn', ['help:evaluate', '-Dexpression=project.version', '-q', '-DforceStdout', '-f', pomFile]);
-            artifacts.push(Artifact.fromString(commandOutput))
+            const groupId = await execAndGetOutput('mvn', ['help:evaluate', '-Dexpression=project.groupId', '-q', '-DforceStdout', '-f', pomFile]);
+            const artifactId = await execAndGetOutput('mvn', ['help:evaluate', '-Dexpression=project.artifactId', '-q', '-DforceStdout', '-f', pomFile]);
+            const version = await execAndGetOutput('mvn', ['help:evaluate', '-Dexpression=project.version', '-q', '-DforceStdout', '-f', pomFile]);
+
+            const artifact = new Artifact(groupId, artifactId, version);
+            await log(`Resolved artifact [${artifact.toString()}]]`);
+            artifacts.push(artifact)
         }
 
         return artifacts;
@@ -38,13 +40,13 @@ export class MavenArtifact extends AbstractArtifact {
         const m2RepositoryDirectory = await execAndGetOutput('mvn', ['help:evaluate', '-Dexpression=settings.localRepository', '-q', '-DforceStdout']);
         for (let artifact of artifacts) {
             const artifactRelativeDirectory = artifact.toString().replace(':', '/');
-            const targetDirectory = `${await getWorkingDirectory()}}/${artifactRelativeDirectory}`;
+            const targetDirectory = `${await getWorkingDirectory()}/${artifactRelativeDirectory}`;
 
             await execAndGetOutput('mkdir', ['-p', `${targetDirectory}`]);
             await execAndGetOutput('cp ', ['-r', `${m2RepositoryDirectory}/${artifactRelativeDirectory}`, `${targetDirectory}`]);
 
             core.debug(`Copied artifact files for [${artifact.toString()}`);  // Not working???
-            await execAndGetOutput('echo', [`Copied artifact files for [${artifact.toString()}] to [${targetDirectory}]`])
+            await log(`Copied artifact files for [${artifact.toString()}] to [${targetDirectory}]`);
         }
     }
 }
