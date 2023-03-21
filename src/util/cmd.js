@@ -24,7 +24,7 @@ export async function execAndGetOutput(baseCmd, argsArray = []) {
         };
 
         await exec.exec(baseCmd, argsArray, options);
-        return commandOutput;
+        return commandOutput.trimEnd();
     } catch (error) {
         core.notice(`Release version could not be detected! STDOUT: ${commandOutput}. STDERR: ${commandError}`);
         core.setFailed(commandError);
@@ -58,9 +58,9 @@ export async function getWorkingDirectory() {
  */
 export async function findFilesMatchingPattern(pattern, targetDirectory) {
     if (!targetDirectory) {
-        targetDirectory = await getCurrentDirectory();
+        targetDirectory = await getWorkingDirectory();
     }
-    await execAndGetOutput('echo', [`"Searching based on directory: [${await getCurrentDirectory()}]"`])
+    await execAndGetOutput('echo', [`"Searching based on directory: [${await getWorkingDirectory()}]"`])
     const allFiles = await execAndGetOutput('find', [`"${targetDirectory || '.'}"`, '-type', 'f', '-iname', `"${pattern}"`]);
     return allFiles?.split('\n').filter(file => file);
 }

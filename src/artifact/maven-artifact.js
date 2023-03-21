@@ -25,7 +25,7 @@ export class MavenArtifact extends AbstractArtifact {
             let commandOutput = await execAndGetOutput('mvn', ['help:evaluate', '-Dexpression=project.groupId', '-q', '-DforceStdout', '-f', pomFile]);
             commandOutput += await execAndGetOutput('mvn', ['help:evaluate', '-Dexpression=project.artifactId', '-q', '-DforceStdout', '-f', pomFile]);
             commandOutput += await execAndGetOutput('mvn', ['help:evaluate', '-Dexpression=project.version', '-q', '-DforceStdout', '-f', pomFile]);
-            artifacts.push(Artifact.fromString(commandOutput.replace('\n', '')))
+            artifacts.push(Artifact.fromString(commandOutput))
         }
 
         return artifacts;
