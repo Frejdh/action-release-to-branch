@@ -99,8 +99,9 @@ runs:
       if: env.PROJECT_FRAMEWORK == 'maven'
       shell: bash
       working-directory: ./${{ env.APP_REPO_DIR }}
-      run: >
-        mkdir -p "${{ env.LOCAL_REPOSITORY_DIR }}" &&
+      run: |
+        mkdir -p "${{ env.LOCAL_REPOSITORY_DIR }}"
+        echo "DEFAULT_BRANCH=$(git remote show origin | awk '/HEAD branch/ {print $NF}')" >> $GITHUB_ENV
         mvn -B install source:jar javadoc:jar install -Dencoding="UTF-8" -DcreateChecksum=true -DadditionalJOption="-Xdoclint:none" -e ${{ inputs.build-arguments }}
 
     - name: Checkout repository to release on
@@ -157,6 +158,8 @@ runs:
       env:
         projectFramework: "${{ inputs.project-framework }}"
         workingDirectory: "${{ env.RELEASE_REPO_DIR }}"
+        defaultBranch: "${{ env.DEFAULT_BRANCH }}"
+        releaseBranch: "${{ env.RELEASE_BRANCH }}"
       with:
         script: |
           const { default: script } = await import("${{ github.action_path }}/src/find-and-copy-artifacts.js");
