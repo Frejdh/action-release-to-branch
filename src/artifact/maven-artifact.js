@@ -1,4 +1,4 @@
-import {execAndGetOutput, findFilesMatchingPattern} from "../util/cmd.js";
+import {execAndGetOutput, findFilesMatchingPattern, getWorkingDirectory} from "../util/cmd.js";
 import {AbstractArtifact} from "./abstract-artifact.js";
 import {Artifact} from "./model/artifact.js";
 import * as core from '@actions/core';
@@ -36,10 +36,9 @@ export class MavenArtifact extends AbstractArtifact {
      */
     async copyArtifacts(artifacts) {
         const m2RepositoryDirectory = await execAndGetOutput('mvn', ['help:evaluate', '-Dexpression=settings.localRepository', '-q', '-DforceStdout']);
-        const { workingDirectory } = process.env;
         for (let artifact of artifacts) {
             const artifactRelativeDirectory = artifact.toString().replace(':', '/');
-            const targetDirectory = await execAndGetOutput('readlink', ['-f', `${workingDirectory || '.'}/${artifactRelativeDirectory}`]);
+            const targetDirectory = `${await getWorkingDirectory()}}/${artifactRelativeDirectory}`;
 
             await execAndGetOutput('mkdir', ['-p', `"${targetDirectory}"`]);
             await execAndGetOutput('cp ', [`"${m2RepositoryDirectory}/${artifactRelativeDirectory}"/*`, `"${targetDirectory}"`]);qw

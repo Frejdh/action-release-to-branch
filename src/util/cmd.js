@@ -33,6 +33,24 @@ export async function execAndGetOutput(baseCmd, argsArray = []) {
 }
 
 /**
+ * @return {Promise<string>}
+ */
+export async function getCurrentDirectory() {
+    const directory = await execAndGetOutput('pwd');
+    await execAndGetOutput('echo', [`Resolved current directory: [${directory}]`])
+    return directory;
+}
+
+/**
+ * @return {Promise<string>}
+ */
+export async function getWorkingDirectory() {
+    const directory = await execAndGetOutput('readlink', ['-f', `${process.env.workingDirectory || '.'}`]);
+    await execAndGetOutput('echo', [`Resolved working directory: [${directory}]`])
+    return directory;
+}
+
+/**
  *
  * @param {string} pattern (bash 'find' syntax)
  * @param {string?} targetDirectory Optional directory to base the search on. Relative path from working directory,
@@ -42,7 +60,7 @@ export async function findFilesMatchingPattern(pattern, targetDirectory) {
     if (!targetDirectory) {
         targetDirectory = process?.env?.workingDirectory || '.';
     }
-    await execAndGetOutput('echo', ['"Searching based on directory: [$(pwd)]"'])
+    await execAndGetOutput('echo', [`"Searching based on directory: [${await getCurrentDirectory()}]"`])
     const allFiles = await execAndGetOutput('find', [`"${targetDirectory || '.'}"`, '-type', 'f', '-iname', `"${pattern}"`]);
     return allFiles?.split('\n').filter(file => file);
 }
