@@ -5,16 +5,16 @@ import * as core from '@actions/core';
  *
  * @param {string} baseCmd
  * @param {string[]} argsArray=[]
- * @param {string} workingDirectory
+ * @param {boolean} useDefaultWorkingDirectory
  * @return {Promise<string>} Command output
  */
-export async function execAndGetOutput(baseCmd, argsArray = [], workingDirectory = await getWorkingDirectory()) {
+export async function execAndGetOutput(baseCmd, argsArray = [], useDefaultWorkingDirectory = true) {
     let commandOutput = '';
     let commandError = '';
 
     try {
         const options = {
-            cwd: workingDirectory,
+            cwd: useDefaultWorkingDirectory ? await getWorkingDirectory() : undefined,
             listeners: {
                 stdout: (data) => {
                     commandOutput += data.toString();
@@ -40,14 +40,14 @@ export async function execAndGetOutput(baseCmd, argsArray = [], workingDirectory
  * @return {void}
  */
 export async function log(message) {
-    await execAndGetOutput('echo', [message?.toString()]);
+    await execAndGetOutput('echo', [message?.toString()], false);
 }
 
 /**
  * @return {Promise<string>}
  */
 export async function getCurrentDirectory() {
-    const directory = await execAndGetOutput('pwd');
+    const directory = await execAndGetOutput('pwd', [], false);
     await log(`Resolved current directory: [${directory}]`);
     return directory;
 }
@@ -57,7 +57,7 @@ export async function getCurrentDirectory() {
  * @return {Promise<string>}
  */
 export async function getWorkingDirectory() {
-    const directory = await execAndGetOutput('readlink', ['-f', `${process.env.workingDirectory || '.'}`]);
+    const directory = await execAndGetOutput('readlink', ['-f', `${process.env.workingDirectory || '.'}`], false);
     await log(`Resolved working directory: [${directory}]`);
     return directory;
 }
