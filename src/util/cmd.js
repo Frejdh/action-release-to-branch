@@ -5,14 +5,16 @@ import * as core from '@actions/core';
  *
  * @param {string} baseCmd
  * @param {string[]} argsArray=[]
+ * @param {string} workingDirectory
  * @return {Promise<string>} Command output
  */
-export async function execAndGetOutput(baseCmd, argsArray = []) {
+export async function execAndGetOutput(baseCmd, argsArray = [], workingDirectory = await getWorkingDirectory()) {
     let commandOutput = '';
     let commandError = '';
 
     try {
         const options = {
+            cwd: workingDirectory,
             listeners: {
                 stdout: (data) => {
                     commandOutput += data.toString();
@@ -51,6 +53,7 @@ export async function getCurrentDirectory() {
 }
 
 /**
+ * Reads the working directory from an environment variable if it exists. Otherwise, use the currently opened directory.
  * @return {Promise<string>}
  */
 export async function getWorkingDirectory() {
