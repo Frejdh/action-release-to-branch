@@ -135,10 +135,8 @@ runs:
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
 
-        git ls-remote --exit-code --heads origin "${{ env.RELEASE_BRANCH }}" >/dev/null 2>&1
-        EXIT_CODE=$?
-
-        if [[ $EXIT_CODE == '0' ]]; then
+        git fetch --all
+        if git ls-remote --exit-code --heads origin "${{ env.RELEASE_BRANCH }}" >/dev/null 2>&1; then
           echo "The branch [${{ env.RELEASE_BRANCH }}] was found"
           git checkout "${{ env.RELEASE_BRANCH }}"
         else
@@ -177,7 +175,7 @@ runs:
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git add . && git commit -m "New release build [${{ env.RELEASE_VERSION }}] for ${{ github.event.repository.owner.name }}/${{ github.event.repository.name }}"
+        git add . && git commit -m "New release build [${{ env.RELEASE_VERSION }}] for ${{ github.repository }}"
 
     - name: Push to release branch
       uses: ad-m/github-push-action@v0.6.0
