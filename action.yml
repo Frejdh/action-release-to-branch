@@ -134,7 +134,7 @@ runs:
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
 
-        if [ $(git rev-parse --verify "${{ env.RELEASE_BRANCH }}" 2>/dev/null) ]; then
+        if [[ "$(git ls-remote --exit-code --heads origin "${{ env.RELEASE_BRANCH }}" | wc -l)" != '0' ]]; then
           git checkout "${{ env.RELEASE_BRANCH }}"
         else
           RELEASE_BRANCH_CREATED=true
@@ -142,7 +142,7 @@ runs:
           git clean -fd
           git commit --allow-empty -m "Initial commit on release branch"
         fi
-        echo "RELEASE_BRANCH_CREATED=${RELEASE_BRANCH_CREATED}" >> $GITHUB_ENV
+        echo "RELEASE_BRANCH_CREATED=$RELEASE_BRANCH_CREATED" >> $GITHUB_ENV
 
     - name: Push new release branch to remote
       if: env.RELEASE_BRANCH_CREATED == 'true'
