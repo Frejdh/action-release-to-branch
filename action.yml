@@ -137,11 +137,12 @@ runs:
 
         git ls-remote --exit-code --heads origin "${{ env.RELEASE_BRANCH }}" >/dev/null 2>&1
         EXIT_CODE=$?
-        echo "Got exit code $EXIT_CODE"
 
         if [[ $EXIT_CODE == '0' ]]; then
+          echo "The branch [${{ env.RELEASE_BRANCH }}] was found"
           git checkout "${{ env.RELEASE_BRANCH }}"
         else
+          echo "The branch [${{ env.RELEASE_BRANCH }}] doesn't exist. Creating new branch and pushing to remote"
           RELEASE_BRANCH_CREATED=true
           git switch --orphan "${{ env.RELEASE_BRANCH }}"
           git clean -fd

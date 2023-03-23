@@ -3,7 +3,7 @@ import {GradleArtifact} from "./artifact/gradle-artifact.js";
 import {NpmArtifact} from "./artifact/npm-artifact.js";
 import {PyPiArtifact} from "./artifact/pypi-artifact.js";
 import * as core from "@actions/core";
-import {execAndGetOutput} from "./util/cmd";
+import {execAndGetOutput} from "./util/cmd.js";
 
 // https://github.com/actions/github-script
 export default async function script() {
