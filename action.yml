@@ -80,6 +80,7 @@ runs:
         path: "${{ env.APP_REPO_DIR }}"
         ref: "${{ inputs.commitish }}"
         persist-credentials: true
+        fetch-depth: 0
 
     - name: Set up JDK ${{ inputs.java-version }} (${{ inputs.java-distribution }})
       uses: actions/setup-java@v2
@@ -110,7 +111,7 @@ runs:
         path: "${{ env.RELEASE_REPO_DIR }}"
         token: "${{ inputs.github-token }}"
         repository: "${{ inputs.release-branch-repository }}"
-        persist-credentials: false
+        persist-credentials: true
         fetch-depth: 0
 
     - name: Determine release branch
@@ -134,7 +135,11 @@ runs:
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
 
-        if [[ "$(git ls-remote --exit-code --heads origin "${{ env.RELEASE_BRANCH }}" | wc -l)" != '0' ]]; then
+        git ls-remote --exit-code --heads origin "${{ env.RELEASE_BRANCH }} >/dev/null 2>&1
+        EXIT_CODE=$?
+        echo "Got exit code $EXIT_CODE"
+
+        if [[ $EXIT_CODE == '0' ]]; then
           git checkout "${{ env.RELEASE_BRANCH }}"
         else
           RELEASE_BRANCH_CREATED=true
