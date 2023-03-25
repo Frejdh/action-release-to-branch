@@ -6,10 +6,11 @@ import * as exec from '@actions/exec';
  * @param {string} baseCmd
  * @param {string[]} argsArray=[]
  * @param {boolean} useDefaultWorkingDirectory=true
+ * @param {boolean} logCommand=true
  * @return {Promise<string>} Command output
  */
-export async function execAndGetOutput(baseCmd, argsArray = [], useDefaultWorkingDirectory = true) {
-	const commandToExecuteString = argsArray?.length ? `${baseCmd} "${argsArray.join('" "')}"` : baseCmd;
+export async function execAndGetOutput(baseCmd, argsArray = [], useDefaultWorkingDirectory = true, logCommand = true) {
+	const commandToExecuteString = (argsArray?.length ? `${baseCmd} "${argsArray.join('" "')}"` : baseCmd);
 	let commandOutput = '';
 	let commandError = '';
 
@@ -26,12 +27,14 @@ export async function execAndGetOutput(baseCmd, argsArray = [], useDefaultWorkin
 			}
 		};
 
-		await log(`==> ${commandToExecuteString}`);
+		if (logCommand) {
+			await log(`==> ${commandToExecuteString}`);
+		}
 		await exec.exec(baseCmd, argsArray, options);
 		return commandOutput.trimEnd();
 	} catch (error) {
 		core.notice(commandError);
-		throw new Error(`Command failed for [${commandToExecuteString}]!\nError name: ${error.name}\nError Message: ${error.message}\nCommand STDOUT: ${commandOutput}\nCommand STDERR: ${commandError}\nError Stacktrace: ${error.stack}`)
+		throw new Error(`Command failed for [${commandToExecuteString}]!\nError name: ${error.name}\nError Message: ${error.message}\nCommand STDOUT: ${commandOutput}\nCommand STDERR: ${commandError}\nError Stacktrace: ${error.stack}`);
 	}
 
 }
@@ -42,7 +45,7 @@ export async function execAndGetOutput(baseCmd, argsArray = [], useDefaultWorkin
  * @return {void}
  */
 export async function log(message) {
-	await execAndGetOutput('echo', [message?.toString()], false);
+	await execAndGetOutput(`echo "${message?.toString().replaceAll('"', '\\"')}"`, [], false, false);
 }
 
 /**
