@@ -180,6 +180,7 @@ runs:
       env:
         projectFramework: "${{ inputs.project-framework }}"
         workingDirectory: "${{ env.RELEASE_REPO_DIR }}"
+        appDirectory: "${{ env.APP_REPO_DIR }}"
         defaultBranch: "${{ env.DEFAULT_BRANCH }}"
         releaseBranch: "${{ env.RELEASE_BRANCH }}"
       with:

@@ -68,6 +68,16 @@ export async function getWorkingDirectory() {
 }
 
 /**
+ * Reads the working directory from an environment variable if it exists. Otherwise, uses the currently opened directory.
+ * @return {Promise<string>}
+ */
+export async function getAppRepositoryDirectory() {
+	const directory = await execAndGetOutput('readlink', ['-f', `${process.env.appDirectory || '.'}`], false);
+	await log(`Resolved release repository directory: [${directory}]`);
+	return directory;
+}
+
+/**
  *
  * @param {string} pattern bash 'find' -iname syntax
  * @param {string?} targetDirectory Optional directory to base the search on. Relative path from working directory,

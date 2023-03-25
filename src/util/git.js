@@ -2,11 +2,12 @@ import { execAndGetOutput, log } from "./cmd.js";
 
 /**
  * @param {string} branch
+ * @param {boolean} useDefaultWorkingDirectory=true
  * @return {Promise<void>}
  */
-export async function checkoutBranch(branch) {
+export async function checkoutBranch(branch, useDefaultWorkingDirectory = true) {
 	await log(`Checking out branch [${branch}]`);
-	await execAndGetOutput('git', ['checkout', branch]);
+	await execAndGetOutput('git', ['checkout', branch], useDefaultWorkingDirectory);
 }
 
 /**

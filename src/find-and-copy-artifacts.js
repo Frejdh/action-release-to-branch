@@ -3,6 +3,7 @@ import { GradleArtifact } from "./artifact/gradle-artifact.js";
 import { MavenArtifact } from "./artifact/maven-artifact.js";
 import { NpmArtifact } from "./artifact/npm-artifact.js";
 import { PyPiArtifact } from "./artifact/pypi-artifact.js";
+import { execAndGetOutput, getAppRepositoryDirectory, getWorkingDirectory } from "./util/cmd.js";
 import { checkoutBranch } from "./util/git.js";
 
 // https://github.com/actions/github-script
@@ -32,13 +33,15 @@ export default async function script() {
 			throw new Error('Project framework not known');
 	}
 
-	await checkoutBranch(defaultBranch);
+	await execAndGetOutput('cd', [await getAppRepositoryDirectory()])
+	await checkoutBranch(defaultBranch, false);
 	const filesToInspect = await frameworkImpl.getFilesToInspect();
 	const artifactsToCopy = await frameworkImpl.getArtifactsToCopy(filesToInspect);
 	if (!artifactsToCopy?.length) {
 		throw new Error('No artifacts found');
 	}
 
+	await execAndGetOutput('cd', [await getWorkingDirectory()])
 	await checkoutBranch(releaseBranch);
 	await frameworkImpl.copyArtifacts(artifactsToCopy);
 

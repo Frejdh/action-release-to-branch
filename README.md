@@ -31,6 +31,9 @@ name: Release in this repository
 env:
     EVENT_BRANCH_NAME: ${{ github.head_ref || github.ref_name || '' }}
     DEFAULT_FRAMEWORK: 'Maven'
+    DEFAULT_TAG_ENABLED: 'true'
+    DEFAULT_TAG_PATTERN: '^(?!.+(-SNAPSHOT)$).+$'
+    DEFAULT_TAG_OVERRIDE: 'true'
 
 on:
     push:
@@ -44,9 +47,9 @@ on:
     workflow_dispatch:
         inputs:
             project-framework:
-                description: Select what kind of framework the project uses. Note, only Maven is supported at the moment!
+                description: Select what kind of framework the project uses
                 type: choice
-                default: Maven
+                default: ${{ env.DEFAULT_FRAMEWORK }}
                 options:
                     - Maven
                     - Gradle
@@ -54,13 +57,28 @@ on:
                     - PyPi
 
             build-arguments:
-                description: Arguments for the maven build. Default 'mvn -B install -e [CUSTOM ARGS]'
+                description: Additional arguments for the maven build
                 required: false
 
             commitish:
                 description: Git reference (branch/commit) to trigger the build on
                 default: ''
                 required: false
+
+            create-tag-enabled:
+                description: Whether tags should be created
+                type: boolean
+                default: ${{ env.DEFAULT_TAG_ENABLED }}
+
+            create-tag-pattern:
+                description: Which pattern that should generate tags. JavaScript regex syntax
+                required: false
+                default: ${{ env.DEFAULT_TAG_PATTERN }}
+
+            create-tag-allow-override:
+                description: Whether the tags created can override existing ones
+                type: boolean
+                default: ${{ env.DEFAULT_TAG_OVERRIDE }}
 
 jobs:
     release:
@@ -73,6 +91,8 @@ jobs:
                   project-framework: ${{ inputs.project-framework || env.DEFAULT_FRAMEWORK }}
                   build-arguments: ${{ inputs.build-arguments }}
                   commitish: ${{ inputs.commitish || env.EVENT_BRANCH_NAME }}
-
+                  create-tag-enabled: ${{ inputs.create-tag-enabled || env.DEFAULT_TAG_ENABLED }}
+                  create-tag-pattern: ${{ inputs.create-tag-pattern || env.DEFAULT_TAG_PATTERN }}
+                  create-tag-allow-override: ${{ inputs.create-tag-allow-override || env.DEFAULT_TAG_OVERRIDE }}
 
 ```
