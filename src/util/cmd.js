@@ -30,9 +30,8 @@ export async function execAndGetOutput(baseCmd, argsArray = [], useDefaultWorkin
 		await exec.exec(baseCmd, argsArray, options);
 		return commandOutput.trimEnd();
 	} catch (error) {
-
 		core.notice(commandError);
-		throw new Error(`Command failed with error-code [${commandToExecuteString}]! STDOUT: ${commandOutput}. STDERR: ${commandError}`)
+		throw new Error(`Command failed for [${commandToExecuteString}]!\nError name: ${error.name}\nError Message: ${error.message}\nCommand STDOUT: ${commandOutput}\nCommand STDERR: ${commandError}\nError Stacktrace: ${error.stack}`)
 	}
 
 }

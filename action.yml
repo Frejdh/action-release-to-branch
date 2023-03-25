@@ -65,12 +65,10 @@ inputs:
     description: Whether tags should be created (in the originating repository). The tag name will be the first found artifact's/package's version
     required: false
     default: 'false'
-#    options:
-#      - false
-#      - true
+#    type: boolean
 
   create-tag-pattern:
-    description: Which tags that should generate tags. Set to empty string or '.*' to match everything. By default, match everything not ending with -SNAPSHOT. JavaScript regex syntax
+    description: Which pattern that should generate tags. Set to empty string or '.*' to match everything. By default, match everything not ending with -SNAPSHOT. JavaScript regex syntax
     required: false
     default: '^(?!.+(-SNAPSHOT)$).+$'
 
@@ -78,9 +76,7 @@ inputs:
     description: Whether the tags created can override existing ones. Equivalent to 'git push --force <tag>'
     required: false
     default: 'false'
-#    options:
-#      - false
-#      - true
+#    type: boolean
 
 
 runs:
