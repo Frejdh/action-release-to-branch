@@ -19,7 +19,7 @@ inputs:
     default: 'temurin'
 
   cache-id:
-    description: ID (subkey) for the cache'
+    description: ID (subkey) for the cache
     required: false
     default: 'v1'
 
@@ -61,6 +61,27 @@ inputs:
     description: Release branch name for Python PIP packages
     required: false
 
+  create-tag-enabled:
+    description: Whether tags should be created (in the originating repository). The tag name will be the first found artifact's/package's version
+    required: false
+    default: 'false'
+#    options:
+#      - false
+#      - true
+
+  create-tag-pattern:
+    description: Which tags that should generate tags. Set to empty string or '.*' to match everything. By default, match everything not ending with -SNAPSHOT. JavaScript regex syntax
+    required: false
+    default: '^(?!.+(-SNAPSHOT)$).+$'
+
+  create-tag-allow-override:
+    description: Whether the tags created can override existing ones. Equivalent to 'git push --force <tag>'
+    required: false
+    default: 'false'
+#    options:
+#      - false
+#      - true
+
 
 runs:
   using: composite
@@ -73,6 +94,9 @@ runs:
         echo "RELEASE_REPO_DIR=release-repo" >> $GITHUB_ENV
         echo PROJECT_FRAMEWORK="$(echo "${{ inputs.project-framework }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
         cat "$GITHUB_ENV"
+
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "github-actions[bot]"
 
     - name: Checkout branch code
       uses: actions/checkout@v3
@@ -132,8 +156,6 @@ runs:
       working-directory: ./${{ env.RELEASE_REPO_DIR }}
       run: |
         RELEASE_BRANCH_CREATED=false
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
 
         git fetch --all
         if git ls-remote --exit-code --heads origin "${{ env.RELEASE_BRANCH }}" >/dev/null 2>&1; then
@@ -173,9 +195,8 @@ runs:
       shell: bash
       working-directory: ./${{ env.RELEASE_REPO_DIR }}
       run: |
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
-        git add . && git commit -m "New release build [${{ env.RELEASE_VERSION }}] for ${{ github.repository }}"
+        git add .
+        git commit -m "New release build [${{ env.RELEASE_VERSION }}] for ${{ github.repository }}"
 
     - name: Push to release branch
       uses: ad-m/github-push-action@v0.6.0
@@ -184,3 +205,16 @@ runs:
         branch: "${{ env.RELEASE_BRANCH }}"
         github_token: "${{ inputs.github-token }}"
         directory: "${{ env.RELEASE_REPO_DIR }}"
+
+    - name: Check if tag shall be created
+      if: inputs.create-tag-enabled == 'true'
+      uses: actions/github-script@v6
+      env:
+        workingDirectory: "${{ env.APP_REPO_DIR }}"
+        defaultBranch: "${{ env.DEFAULT_BRANCH }}"
+        releaseVersion: "${{ env.RELEASE_VERSION }}"
+        pushWithForce: "${{ inputs.create-tag-allow-override }}"
+      with:
+        script: |
+          const { default: script } = await import("${{ github.action_path }}/src/create-and-push-tag.js");
+          await script();
