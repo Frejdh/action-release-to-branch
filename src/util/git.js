@@ -31,18 +31,28 @@ export async function createCommit(message, workingDirectory) {
 }
 
 /**
- *
+ * Create a new tag with force. If a tag shall not be overridden, use {@link isTagOnRemote} before this call.
  * @param {string} tag Required tag name
  * @param {string?} message Optional message
  * @param {string?} workingDirectory
  * @return {Promise<void>}
  */
 export async function createTag(tag, message, workingDirectory) {
-	const gitArgs = ['tag', tag];
+	const gitArgs = ['tag', tag, '-f'];
 	if (message) {
 		gitArgs.push('-m', message);
 	}
 	await execAndGetOutput('git', gitArgs, workingDirectory);
+}
+
+/**
+ * Check if a tag exists on remote
+ * @param {string} tag Required tag name
+ * @param {string?} workingDirectory
+ * @return {Promise<boolean>}
+ */
+export async function isTagOnRemote(tag, workingDirectory) {
+	return !!await execAndGetOutput('git', ['tag', '-l', tag], workingDirectory);
 }
 
 

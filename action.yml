@@ -194,7 +194,7 @@ runs:
       working-directory: ./${{ env.RELEASE_REPO_DIR }}
       run: |
         git add .
-        git commit -m "New release build [${{ env.RELEASE_VERSION }}] for ${{ github.repository }}"
+        git commit --allow-empty -m "New release build [${{ env.RELEASE_VERSION }}] for ${{ github.repository }}"
 
     - name: Push to release branch
       uses: ad-m/github-push-action@v0.6.0

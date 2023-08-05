@@ -1,5 +1,5 @@
 import { log } from "./util/cmd.js";
-import { checkoutBranch, createTag, pushToRemote } from "./util/git.js";
+import { checkoutBranch, createTag, isTagOnRemote, pushToRemote } from "./util/git.js";
 import { asBoolean } from "./util/convert.js";
 
 // https://github.com/actions/github-script
@@ -12,10 +12,18 @@ export default async function script() {
 	} = process.env;
 
 	const isAllowedPattern = await checkIfAllowedTagPattern(allowedTagPattern, releaseVersion);
+	const isPushingWithForce = asBoolean(pushWithForce);
 	if (isAllowedPattern) {
 		await checkoutBranch(defaultBranch);
-		await createTag(releaseVersion, `Release for version ${releaseVersion}`);
-		await pushToRemote(asBoolean(pushWithForce), releaseVersion);
+
+		if (isPushingWithForce || !(await isTagOnRemote(releaseVersion))) {
+			await createTag(releaseVersion, `Release for version ${releaseVersion}`);
+			await pushToRemote(isPushingWithForce, releaseVersion);
+		}
+		else {
+			await log(`Tag [${releaseVersion}] was not created as it exists already. Please enable override option, or delete the existing one on the remote`);
+		}
+
 	}
 }
 
