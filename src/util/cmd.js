@@ -5,18 +5,22 @@ import * as exec from '@actions/exec';
  *
  * @param {string} baseCmd
  * @param {string[]} argsArray=[]
- * @param {boolean} useDefaultWorkingDirectory=true
+ * @param {string|null?} workingDirectory Which directory the command shall be based from. Missing/undefined => Default working directory. Null => Current directory.
  * @param {boolean} logCommand=true
  * @return {Promise<string>} Command output
  */
-export async function execAndGetOutput(baseCmd, argsArray = [], useDefaultWorkingDirectory = true, logCommand = true) {
+export async function execAndGetOutput(baseCmd, argsArray = [], workingDirectory = undefined, logCommand = true) {
 	const commandToExecuteString = (argsArray?.length ? `${baseCmd} "${argsArray.join('" "')}"` : baseCmd);
 	let commandOutput = '';
 	let commandError = '';
 
+	if (workingDirectory === undefined) {
+		workingDirectory = await getWorkingDirectory();
+	}
+
 	try {
 		const options = {
-			cwd: useDefaultWorkingDirectory ? await getWorkingDirectory() : undefined,
+			cwd: workingDirectory,
 			listeners: {
 				stdout: (data) => {
 					commandOutput += data.toString();
@@ -28,7 +32,7 @@ export async function execAndGetOutput(baseCmd, argsArray = [], useDefaultWorkin
 		};
 
 		if (logCommand) {
-			await log(`==> ${commandToExecuteString}`);
+			await log(`[${workingDirectory || '.'}] ==> ${commandToExecuteString}`);
 		}
 		await exec.exec(baseCmd, argsArray, options);
 		return commandOutput.trimEnd();
@@ -45,7 +49,7 @@ export async function execAndGetOutput(baseCmd, argsArray = [], useDefaultWorkin
  * @return {void}
  */
 export async function log(message) {
-	await execAndGetOutput(`echo "${message?.toString().replaceAll('"', '\\"')}"`, [], false, false);
+	await execAndGetOutput(`echo "${message?.toString().replaceAll('"', '\\"')}"`, [], null, false);
 }
 
 /**
@@ -62,7 +66,7 @@ export async function getCurrentDirectory() {
  * @return {Promise<string>}
  */
 export async function getWorkingDirectory() {
-	const directory = await execAndGetOutput('readlink', ['-f', `${process.env.workingDirectory || '.'}`], false);
+	const directory = await execAndGetOutput('readlink', ['-f', `${process.env.workingDirectory || '.'}`], null);
 	await log(`Resolved working directory: [${directory}]`);
 	return directory;
 }
@@ -72,7 +76,17 @@ export async function getWorkingDirectory() {
  * @return {Promise<string>}
  */
 export async function getAppRepositoryDirectory() {
-	const directory = await execAndGetOutput('readlink', ['-f', `${process.env.appDirectory || '.'}`], false);
+	const directory = await execAndGetOutput('readlink', ['-f', `${process.env.appDirectory || '.'}`], null);
+	await log(`Resolved application repository directory: [${directory}]`);
+	return directory;
+}
+
+/**
+ * Reads the working directory from an environment variable if it exists. Otherwise, uses the currently opened directory.
+ * @return {Promise<string>}
+ */
+export async function getReleaseRepositoryDirectory() {
+	const directory = await execAndGetOutput('readlink', ['-f', `${process.env.releaseDirectory || '.'}`], null);
 	await log(`Resolved release repository directory: [${directory}]`);
 	return directory;
 }
@@ -85,9 +99,9 @@ export async function getAppRepositoryDirectory() {
  */
 export async function findFilesMatchingPattern(pattern, targetDirectory) {
 	if (!targetDirectory) {
-		targetDirectory = await getWorkingDirectory();
+		targetDirectory = await getAppRepositoryDirectory();
 	}
-	await log(`Searching based on directory: [${await getWorkingDirectory()}]`);
+	await log(`Searching based on directory: [${targetDirectory}]`);
 	const allFiles = await execAndGetOutput('find', [`${targetDirectory || '.'}`, '-type', 'f', '-iname', `${pattern}`]);
 	return allFiles?.split('\n').filter(file => file);
 }

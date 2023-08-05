@@ -3,7 +3,7 @@ import { GradleArtifact } from "./artifact/gradle-artifact.js";
 import { MavenArtifact } from "./artifact/maven-artifact.js";
 import { NpmArtifact } from "./artifact/npm-artifact.js";
 import { PyPiArtifact } from "./artifact/pypi-artifact.js";
-import { execAndGetOutput, getAppRepositoryDirectory, getWorkingDirectory } from "./util/cmd.js";
+import { getAppRepositoryDirectory, getReleaseRepositoryDirectory } from "./util/cmd.js";
 import { checkoutBranch } from "./util/git.js";
 
 // https://github.com/actions/github-script
@@ -19,7 +19,7 @@ export default async function script() {
 		case 'maven':
 			frameworkImpl = new MavenArtifact();
 			break;
-	  // TODO: Implement the rest
+	    // TODO: Implement the rest
 		case 'gradle':
 			frameworkImpl = new GradleArtifact();
 			break;
@@ -33,16 +33,17 @@ export default async function script() {
 			throw new Error('Project framework not known');
 	}
 
-	await execAndGetOutput('cd', [await getAppRepositoryDirectory()])
-	await checkoutBranch(defaultBranch, false);
+	const appRepositoryDir = await getAppRepositoryDirectory();
+	const releaseRepositoryDir = await getReleaseRepositoryDirectory();
+
+	await checkoutBranch(defaultBranch, appRepositoryDir);
 	const filesToInspect = await frameworkImpl.getFilesToInspect();
 	const artifactsToCopy = await frameworkImpl.getArtifactsToCopy(filesToInspect);
 	if (!artifactsToCopy?.length) {
 		throw new Error('No artifacts found');
 	}
 
-	await execAndGetOutput('cd', [await getWorkingDirectory()])
-	await checkoutBranch(releaseBranch);
+	await checkoutBranch(releaseBranch, releaseRepositoryDir);
 	await frameworkImpl.copyArtifacts(artifactsToCopy);
 
 	core.exportVariable('RELEASE_VERSION', artifactsToCopy[0].version);
