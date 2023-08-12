@@ -211,6 +211,7 @@ runs:
         workingDirectory: "${{ env.APP_REPO_DIR }}"
         defaultBranch: "${{ env.DEFAULT_BRANCH }}"
         releaseVersion: "${{ env.RELEASE_VERSION }}"
+        allowedTagPattern: "${{ inputs.create-tag-pattern }}"
         pushWithForce: "${{ inputs.create-tag-allow-override }}"
       with:
         script: |
