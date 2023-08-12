@@ -49,7 +49,7 @@ on:
       project-framework:
         description: Project framework
         type: choice
-        default: ${{ env.DEFAULT_FRAMEWORK }}
+        default: Maven
         options:
           - Maven
           - Gradle
@@ -68,17 +68,17 @@ on:
       create-tag-enabled:
         description: Create a tag
         type: boolean
-        default: ${{ env.DEFAULT_TAG_ENABLED }}
+        default: 'true'
 
       create-tag-pattern:
         description: The pattern that should generate tags. JavaScript regex syntax
         required: false
-        default: ${{ env.DEFAULT_TAG_PATTERN }}
+        default: '^(?!.+(-SNAPSHOT)$).+$'
 
       create-tag-allow-override:
         description: Override existing tags
         type: boolean
-        default: ${{ env.DEFAULT_TAG_OVERRIDE }}
+        default: 'true'
 
 jobs:
   release:
@@ -146,17 +146,17 @@ on:
       create-tag-enabled:
         description: Create a tag
         type: boolean
-        default: ${{ env.DEFAULT_TAG_ENABLED }}
+        default: 'true'
 
       create-tag-pattern:
         description: The pattern that should generate tags. JavaScript regex syntax
         required: false
-        default: ${{ env.DEFAULT_TAG_PATTERN }}
+        default: '^(?!.+(-SNAPSHOT)$).+$'
 
       create-tag-allow-override:
         description: Override existing tags
         type: boolean
-        default: ${{ env.DEFAULT_TAG_OVERRIDE }}
+        default: 'true'
 
       release-branch-repository:
         description: Target repository that shall contain the release
