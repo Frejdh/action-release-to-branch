@@ -29,71 +29,71 @@ Triggers on push to certain branches, and can be manually triggered
 name: Release in this repository
 
 env:
-    EVENT_BRANCH_NAME: ${{ github.head_ref || github.ref_name || '' }}
-    DEFAULT_FRAMEWORK: 'Maven'
-    DEFAULT_TAG_ENABLED: 'true'
-    DEFAULT_TAG_PATTERN: '^(?!.+(-SNAPSHOT)$).+$'
-    DEFAULT_TAG_OVERRIDE: 'true'
+  EVENT_BRANCH_NAME: ${{ github.head_ref || github.ref_name || '' }}
+  DEFAULT_FRAMEWORK: 'Maven'
+  DEFAULT_TAG_ENABLED: 'true'
+  DEFAULT_TAG_PATTERN: '^(?!.+(-SNAPSHOT)$).+$'
+  DEFAULT_TAG_OVERRIDE: 'true'
 
 on:
-    push:
-        branches:
-            - master
-            - main
-            - develop
-        paths-ignore:
-            - '**.md'
-            - '.github/workflows/**'
-    workflow_dispatch:
-        inputs:
-            project-framework:
-                description: Select what kind of framework the project uses
-                type: choice
-                default: ${{ env.DEFAULT_FRAMEWORK }}
-                options:
-                    - Maven
-                    - Gradle
-                    - NPM
-                    - PyPi
+  push:
+    branches:
+      - master
+      - main
+      - develop
+    paths-ignore:
+      - '**.md'
+      - '.github/workflows/**'
+  workflow_dispatch:
+    inputs:
+      project-framework:
+        description: Project framework
+        type: choice
+        default: ${{ env.DEFAULT_FRAMEWORK }}
+        options:
+          - Maven
+          - Gradle
+          - NPM
+          - PyPi
 
-            build-arguments:
-                description: Additional arguments for the maven build
-                required: false
+      build-arguments:
+        description: Additional arguments for the maven build
+        required: false
 
-            commitish:
-                description: Git reference (branch/commit) to trigger the build on
-                default: ''
-                required: false
+      commitish:
+        description: Git reference (branch/commit) to trigger the build on
+        default: ''
+        required: false
 
-            create-tag-enabled:
-                description: Whether tags should be created
-                type: boolean
-                default: ${{ env.DEFAULT_TAG_ENABLED }}
+      create-tag-enabled:
+        description: Create a tag
+        type: boolean
+        default: ${{ env.DEFAULT_TAG_ENABLED }}
 
-            create-tag-pattern:
-                description: Which pattern that should generate tags. JavaScript regex syntax
-                required: false
-                default: ${{ env.DEFAULT_TAG_PATTERN }}
+      create-tag-pattern:
+        description: The pattern that should generate tags. JavaScript regex syntax
+        required: false
+        default: ${{ env.DEFAULT_TAG_PATTERN }}
 
-            create-tag-allow-override:
-                description: Whether the tags created can override existing ones
-                type: boolean
-                default: ${{ env.DEFAULT_TAG_OVERRIDE }}
+      create-tag-allow-override:
+        description: Override existing tags
+        type: boolean
+        default: ${{ env.DEFAULT_TAG_OVERRIDE }}
 
 jobs:
-    release:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Release artifacts
-              uses: Frejdh/action-release-to-branch@master
-              with:
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
-                  project-framework: ${{ inputs.project-framework || env.DEFAULT_FRAMEWORK }}
-                  build-arguments: ${{ inputs.build-arguments }}
-                  commitish: ${{ inputs.commitish || env.EVENT_BRANCH_NAME }}
-                  create-tag-enabled: ${{ inputs.create-tag-enabled || env.DEFAULT_TAG_ENABLED }}
-                  create-tag-pattern: ${{ inputs.create-tag-pattern || env.DEFAULT_TAG_PATTERN }}
-                  create-tag-allow-override: ${{ inputs.create-tag-allow-override || env.DEFAULT_TAG_OVERRIDE }}
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Release artifacts
+        uses: Frejdh/action-release-to-branch@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          project-framework: ${{ inputs.project-framework || env.DEFAULT_FRAMEWORK }}
+          build-arguments: ${{ inputs.build-arguments }}
+          commitish: ${{ inputs.commitish || env.EVENT_BRANCH_NAME }}
+          create-tag-enabled: ${{ inputs.create-tag-enabled || env.DEFAULT_TAG_ENABLED }}
+          create-tag-pattern: ${{ inputs.create-tag-pattern || env.DEFAULT_TAG_PATTERN }}
+          create-tag-allow-override: ${{ inputs.create-tag-allow-override || env.DEFAULT_TAG_OVERRIDE }}
 
 ```
 
@@ -125,7 +125,7 @@ on:
   workflow_dispatch:
     inputs:
       project-framework:
-        description: Select what kind of framework the project uses
+        description: Project framework
         type: choice
         default: Maven
         options:
@@ -144,22 +144,22 @@ on:
         required: false
 
       create-tag-enabled:
-        description: Whether tags should be created
+        description: Create a tag
         type: boolean
-        default: 'true'
+        default: ${{ env.DEFAULT_TAG_ENABLED }}
 
       create-tag-pattern:
-        description: Which pattern that should generate tags. JavaScript regex syntax
+        description: The pattern that should generate tags. JavaScript regex syntax
         required: false
-        default: '^(?!.+(-SNAPSHOT)$).+$'
+        default: ${{ env.DEFAULT_TAG_PATTERN }}
 
       create-tag-allow-override:
-        description: Whether the tags created can override existing ones
+        description: Override existing tags
         type: boolean
-        default: 'true'
+        default: ${{ env.DEFAULT_TAG_OVERRIDE }}
 
       release-branch-repository:
-        description: Target repository for the release
+        description: Target repository that shall contain the release
         default: Frejdh/releases-test
 
 jobs:

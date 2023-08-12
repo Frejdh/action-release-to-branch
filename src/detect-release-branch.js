@@ -15,10 +15,10 @@ export default async function script() {
 	let releaseBranch = 'releases';
 	switch (projectFramework.toLowerCase()) {
 		case 'maven':
-			releaseBranch = mavenBranch || 'mvn';
+			releaseBranch = mavenBranch || 'maven';
 			break;
 		case 'gradle':
-			releaseBranch = gradleBranch || 'mvn';
+			releaseBranch = gradleBranch || 'maven';
 			break;
 		case 'npm':
 			releaseBranch = npmBranch || 'npm'

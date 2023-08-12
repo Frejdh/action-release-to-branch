@@ -1,6 +1,6 @@
 {
   "name": "action-release",
-  "version": "1.0.1-SNAPSHOT",
+  "version": "1.0.1",
   "type": "module",
   "dependencies": {
     "@actions/core": "^1.10.0",
