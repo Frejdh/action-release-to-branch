@@ -45,8 +45,9 @@ export async function execAndGetOutput(baseCmd, argsArray = [], workingDirectory
 
 
 /**
+ * Log a message in the console.
  * @param {any} message
- * @return {void}
+ * @return {Promise<void>}
  */
 export async function log(message) {
 	await execAndGetOutput(`echo "${message?.toString().replaceAll('"', '\\"')}"`, [], null, false);

@@ -23,7 +23,7 @@ For all input parameters available, please check out the file [action.yml](actio
 For examples on how this can be configured, please see the example below.
 This requires that a new file such as `.github/workflows/optional-filename.yml` is located inside your Github project.
 
-### Example 1. Release on the same repository.
+### Example 1. Release in the same repository.
 Triggers on push to certain branches, and can be manually triggered
 ```yaml
 name: Release in this repository
@@ -97,11 +97,11 @@ jobs:
 
 ```
 
-### Example 2. Release on another repository.
+### Example 2. Release in another repository.
 In the event that the artifacts shall be pushed to another repository, you'd first need to configure a Github action secret.
-In the example below, this secret is called 'RELEASE_PAT_TOKEN', and is a generated PAT token for Github with access to both this, and the target release repository.
+In the example below, this secret is called `RELEASE_PAT_TOKEN`, and is a generated PAT token for Github with access to both this, and the target release repository.
 
-The YAML can look like the following:
+Example of a YAML job configuration:
 ```yaml
 name: Release in another repository
 
