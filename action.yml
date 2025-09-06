@@ -6,7 +6,7 @@ inputs:
   github-token:
     description: Either use `secrets.GITHUB_TOKEN` for the same repository. Or for other repositories, use a personal access token.
     required: true
-    default: '${{ secrets.GITHUB_TOKEN }}'
+    default: ''
 
   java-version:
     description: JDK version to use. Default is '21'.
