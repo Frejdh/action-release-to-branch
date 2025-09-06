@@ -116,6 +116,7 @@ name: Release in another repository
 
 env:
   EVENT_BRANCH_NAME: ${{ github.head_ref || github.ref_name || '' }}
+  DEFAULT_ENV: release
   DEFAULT_FRAMEWORK: Maven
   DEFAULT_TAG_ENABLED: true
   DEFAULT_TAG_PATTERN: '^(?!.+(-SNAPSHOT)$).+$'
@@ -180,6 +181,7 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || env.DEFAULT_ENV }}
     steps:
       - name: Release artifacts
         uses: Frejdh/action-release-to-branch@master
@@ -192,5 +194,4 @@ jobs:
           create-tag-pattern: ${{ inputs.create-tag-pattern || env.DEFAULT_TAG_PATTERN }}
           create-tag-allow-override: ${{ inputs.create-tag-allow-override || env.DEFAULT_TAG_OVERRIDE }}
           release-branch-repository: ${{ inputs.release-branch-repository || env.RELEASE_REPOSITORY }}
-
 ```
