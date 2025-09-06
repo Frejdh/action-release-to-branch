@@ -94,11 +94,17 @@ runs:
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git config --global user.name "github-actions[bot]"
 
+        if [ -z "${{ inputs.github-token }}" ]; then
+          echo "Error: github-token input is required and must not be empty."
+          exit 1
+        fi
+
     - name: Checkout branch code
       uses: actions/checkout@v5
       with:
         path: "${{ env.APP_REPO_DIR }}"
         ref: "${{ inputs.commitish }}"
+        token: "${{ inputs.github-token }}"
         persist-credentials: true
         fetch-depth: 0
 
