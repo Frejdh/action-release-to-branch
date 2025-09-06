@@ -98,10 +98,19 @@ jobs:
 ```
 
 ### Example 2. Release in another repository.
-In the event that the artifacts shall be pushed to another repository, you'd first need to configure a Github action secret.
-In the example below, this secret is called `RELEASE_PAT_TOKEN`, and is a generated PAT token for Github with access to both this, and the target release repository.
+In the event that the artifacts shall be pushed to another repository, you'd first need to configure a GitHub action secret.
 
-Example of a YAML job configuration:
+In the following scenario, a classic PAT token will be generated.
+Please note that the user that you're generating the PAT for needs read/write access to both the source repository, and the target/release repository.
+
+1. Navigate to your user profile and open `Developer Settings -> Tokens (classic)` or go directly to: https://github.com/settings/tokens
+2. Generate a new token, and require at least at minimum the `repo` permissions for read/write.
+3. Copy the generated token value. The value will disappear forever when you close the page, so please save it somewhere appropriately.
+4. Go to the source repository you want to do the release on. Go to `Settings` -> `Environments` and create a new one, or modify an existing one. In this example, I'll be naming it `release`.
+5. Add the branches that should be able to access this PAT key. It's recommended to restrict the access to only production branches such as `master`/`main`.
+6. Add the environment secret. Use whatever key you want, but in this example we'll use `RELEASE_PAT_TOKEN`. The value should be the previously generated PAT.
+
+Example of a YAML job configuration (using the `RELEASE_PAT_TOKEN` secret, and `release` environment):
 ```yaml
 name: Release in another repository
 
@@ -124,6 +133,12 @@ on:
       - '.github/workflows/**'
   workflow_dispatch:
     inputs:
+      environment:
+        description: "Job environment"
+        default: 'release'
+        required: true
+        type: environment
+
       project-framework:
         description: Project framework
         type: choice
@@ -146,7 +161,7 @@ on:
       create-tag-enabled:
         description: Create a tag
         type: boolean
-        default: 'true'
+        default: true
 
       create-tag-pattern:
         description: The pattern that should generate tags. JavaScript regex syntax
@@ -156,7 +171,7 @@ on:
       create-tag-allow-override:
         description: Override existing tags
         type: boolean
-        default: 'true'
+        default: true
 
       release-branch-repository:
         description: Target repository that shall contain the release
@@ -169,7 +184,7 @@ jobs:
       - name: Release artifacts
         uses: Frejdh/action-release-to-branch@master
         with:
-          github-token: ${{ secrets.RELEASE_PAT_TOKEN || secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.RELEASE_PAT_TOKEN }}
           project-framework: ${{ inputs.project-framework || env.DEFAULT_FRAMEWORK }}
           build-arguments: ${{ inputs.build-arguments }}
           commitish: ${{ inputs.commitish || env.EVENT_BRANCH_NAME }}
