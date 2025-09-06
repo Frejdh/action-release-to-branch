@@ -202,15 +202,6 @@ runs:
         git add .
         git commit --allow-empty -m "New release build [${{ env.RELEASE_VERSION }}] for ${{ github.repository }}"
 
-    - name: Debug Token and Remote
-      shell: bash
-      working-directory: ./${{ env.RELEASE_REPO_DIR }}
-      run: |
-        git config --get remote.origin.url
-        git config --get user.name
-        git config --get user.email
-        echo "${{ inputs.github-token }}" | wc -c
-
     - name: Push to release branch
       uses: ad-m/github-push-action@v0.8.0
       with:
