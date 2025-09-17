@@ -110,13 +110,12 @@ Please note that the user that you're generating the PAT for needs read/write ac
 5. Add the branches that should be able to access this PAT key. It's recommended to restrict the access to only production branches such as `master`/`main`.
 6. Add the environment secret. Use whatever key you want, but in this example we'll use `RELEASE_PAT_TOKEN`. The value should be the previously generated PAT.
 
-Example of a YAML job configuration (using the `RELEASE_PAT_TOKEN` secret, and `release` environment):
+Example of a YAML job configuration (using the `RELEASE_PAT_TOKEN` secret and the `release` environment):
 ```yaml
 name: Release in another repository
 
 env:
   EVENT_BRANCH_NAME: ${{ github.head_ref || github.ref_name || '' }}
-  DEFAULT_ENV: release
   DEFAULT_FRAMEWORK: Maven
   DEFAULT_TAG_ENABLED: true
   DEFAULT_TAG_PATTERN: '^(?!.+(-SNAPSHOT)$).+$'
@@ -181,7 +180,7 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment || env.DEFAULT_ENV }}
+    environment: ${{ inputs.environment || vars.RELEASE_ENV || 'release' }}
     steps:
       - name: Release artifacts
         uses: Frejdh/action-release-to-branch@master
