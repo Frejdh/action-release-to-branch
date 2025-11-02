@@ -10,7 +10,7 @@ import { checkoutBranch } from "./util/git.js";
 export default async function script() {
 	const {
 		projectFramework,
-		defaultBranch,
+		projectCommitish,
 		releaseBranch
 	} = process.env;
 
@@ -36,17 +36,18 @@ export default async function script() {
 	const appRepositoryDir = await getAppRepositoryDirectory();
 	const releaseRepositoryDir = await getReleaseRepositoryDirectory();
 
-	await checkoutBranch(defaultBranch, appRepositoryDir);
+	await checkoutBranch(projectCommitish, appRepositoryDir);
 	const filesToInspect = await frameworkImpl.getFilesToInspect();
-	const artifactsToCopy = await frameworkImpl.getArtifactsToCopy(filesToInspect);
-	if (!artifactsToCopy?.length) {
-		throw new Error('No artifacts found');
+	const filesOrArtifactsToCopy = await frameworkImpl.getContentToCopy(filesToInspect);
+	if (!filesOrArtifactsToCopy?.length) {
+		throw new Error('No artifacts or files found');
 	}
 
 	await checkoutBranch(releaseBranch, releaseRepositoryDir);
-	await frameworkImpl.copyArtifacts(artifactsToCopy);
+	await frameworkImpl.preprocessBeforeCopy();
+	await frameworkImpl.copyContent(filesOrArtifactsToCopy);
 
-	core.exportVariable('RELEASE_VERSION', artifactsToCopy[0].version);
+	core.exportVariable('RELEASE_VERSION', filesOrArtifactsToCopy[0].version);
 }
 
 

@@ -14,10 +14,10 @@ export class MavenArtifact extends AbstractArtifact {
 
 	/**
 	 *
-	 * @param {string[]} filesToInspect=[] pom.xml files
-	 * @return {Artifact[]} artifacts
+	 * @param {string[]} filesToInspect pom.xml files
+	 * @return {Promise<Artifact[]>} artifacts
 	 */
-	async getArtifactsToCopy(filesToInspect = []) {
+	async getContentToCopy(filesToInspect = []) {
 		const artifacts = [];
 
 		for (let pomFile of filesToInspect) {
@@ -36,7 +36,7 @@ export class MavenArtifact extends AbstractArtifact {
 	/**
 	 * @param {Artifact[]} artifacts
 	 */
-	async copyArtifacts(artifacts) {
+	async copyContent(artifacts) {
 		const m2RepositoryDirectory = await execAndGetOutput('mvn', ['help:evaluate', '-Dexpression=settings.localRepository', '-q', '-DforceStdout']);
 		for (let artifact of artifacts) {
 			const artifactRelativeDirectory = artifact.toDirectoryPath();
