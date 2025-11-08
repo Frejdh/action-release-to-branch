@@ -4,6 +4,9 @@ import { asBoolean } from "./util/convert.js";
 
 // https://github.com/actions/github-script
 export default async function script() {
+	/**
+	 * @type TagEnv
+	 */
 	const {
 		projectCommitish,
 		releaseVersion,

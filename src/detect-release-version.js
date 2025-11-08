@@ -23,6 +23,7 @@ export default async function script() {
 		case 'gradle':
 			break;
 		case 'npm':
+		case 'node':
 			break;
 		case 'python':
 			break;

@@ -7,7 +7,8 @@ export class AbstractArtifact {
 		return [];
 	}
 
-	async preprocessBeforeCopy() {}
+	async preprocessBeforeCopy() {
+	}
 
 	/**
 
@@ -21,10 +22,18 @@ export class AbstractArtifact {
 	}
 
 	/**
-	 * @param {(Artifact | string)[]} content files or artifacts
+	 * @param {(Artifact | string)[]} artifactsOrFiles files or artifacts
 	 */
-	async copyContent(content) {
+	async copyContent(artifactsOrFiles) {
 		throw new Error('copyArtifacts() not implemented');
+	}
+
+	/**
+	 * @param {(Artifact | string)[]} artifactsOrFiles files or artifacts
+	 * @return {AppInfo}
+	 */
+	async getAppInfo(artifactsOrFiles) {
+		throw new Error('getAppVersion() not implemented');
 	}
 
 }

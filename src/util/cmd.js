@@ -1,5 +1,7 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
+import { getEnv } from "./env.js";
+
 
 /**
  *
@@ -67,7 +69,7 @@ export async function getCurrentDirectory() {
  * @return {Promise<string>}
  */
 export async function getWorkingDirectory() {
-	const directory = await execAndGetOutput('readlink', ['-f', `${process.env.workingDirectory || '.'}`], null);
+	const directory = await execAndGetOutput('readlink', ['-f', `${getEnv().workingDirectory || '.'}`], null);
 	await log(`Resolved working directory: [${directory}]`);
 	return directory;
 }
@@ -77,7 +79,7 @@ export async function getWorkingDirectory() {
  * @return {Promise<string>}
  */
 export async function getAppRepositoryDirectory() {
-	const directory = await execAndGetOutput('readlink', ['-f', `${process.env.appDirectory || '.'}`], null);
+	const directory = await execAndGetOutput('readlink', ['-f', `${getEnv().appDirectory || '.'}`], null);
 	await log(`Resolved application repository directory: [${directory}]`);
 	return directory;
 }
@@ -87,7 +89,7 @@ export async function getAppRepositoryDirectory() {
  * @return {Promise<string>}
  */
 export async function getReleaseRepositoryDirectory() {
-	const directory = await execAndGetOutput('readlink', ['-f', `${process.env.releaseDirectory || '.'}`], null);
+	const directory = await execAndGetOutput('readlink', ['-f', `${getEnv().releaseDirectory || '.'}`], null);
 	await log(`Resolved release repository directory: [${directory}]`);
 	return directory;
 }

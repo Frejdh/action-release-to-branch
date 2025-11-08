@@ -15,15 +15,29 @@ export class NodeArtifact extends AbstractArtifact {
 	}
 
 	async preprocessBeforeCopy() {
-		const deleteOldNodeFiles = shouldDeleteOldNodeFiles()
+		const deleteOldNodeFiles = shouldDeleteOldNodeFiles();
+		console.log('deleteOldNodeFiles', deleteOldNodeFiles);
 		// TODO:
 	}
 
 	/**
-	 * @param {string[]} content files
+	 * @param {string[]} files files
 	 */
-	async copyContent(content) {
-		throw new Error('copyArtifacts() not implemented');
+	async copyContent(files) {
+		console.log('files', files);
+		//throw new Error('copyArtifacts() not implemented');
+	}
+
+	/**
+	 * @param {(Artifact | string)[]} artifactsOrFiles files or artifacts
+	 * @return {AppInfo}
+	 */
+	async getAppInfo(artifactsOrFiles) {
+		const packageJson = require(`${await getAppRepositoryDirectory()}/package.json`);
+		return {
+			name: packageJson.name,
+			version: packageJson.version,
+		};
 	}
 
 }

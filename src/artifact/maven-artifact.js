@@ -1,3 +1,4 @@
+import * as core from "@actions/core";
 import * as core from '@actions/core';
 import { execAndGetOutput, findFilesMatchingPattern, getReleaseRepositoryDirectory, log } from "../util/cmd.js";
 import { AbstractArtifact } from "./abstract-artifact.js";
@@ -48,5 +49,16 @@ export class MavenArtifact extends AbstractArtifact {
 			core.debug(`Copied artifact files for [${artifact.toString()}`);  // Not working???
 			await log(`Copied artifact files for [${artifact.toString()}] to [${targetDirectory}]`);
 		}
+	}
+
+	/**
+	 * @param {Artifact[]} artifacts
+	 * @return {AppInfo}
+	 */
+	async getAppInfo(artifacts) {
+		return {
+			name: `${artifacts[0].groupId}:${artifacts[0].artifactId}`,
+			version: artifacts[0].version
+		};
 	}
 }

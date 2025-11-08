@@ -1,10 +1,17 @@
+/**
+ * Get the current environment.
+ * @return {Env}
+ */
+export function getEnv() {
+	return process.env;
+}
 
 /**
  * Relative to the working directory of the application.
  * @return {string}
  */
 export function getNodeBuildTargetDirectory() {
-	return process.env.nodeBuildTargetDir || '.';
+	return getEnv().nodeBuildTargetDir || '.';
 }
 
 
@@ -12,12 +19,12 @@ export function getNodeBuildTargetDirectory() {
  * @return {RegExp[]}
  */
 export function getNodeFilesToKeepPatterns() {
-	return (process.env.nodeFilesToKeep || '').split(",").map(it => new RegExp(it.trim()));
+	return (getEnv().nodeFilesToKeep || '').split(",").map(it => new RegExp(it.trim()));
 }
 
 /**
  * @return {boolean}
  */
 export function shouldDeleteOldNodeFiles() {
-	return process.env.deleteOldNodeFiles ?? true;
+	return getEnv().deleteOldNodeFiles ?? true;
 }
