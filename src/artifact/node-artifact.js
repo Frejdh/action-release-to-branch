@@ -76,7 +76,7 @@ export class NodeArtifact extends AbstractArtifact {
 	 * @return {AppInfo}
 	 */
 	async getAppInfo(artifactsOrFiles) {
-		const packageJson = readPackageJson();
+		const packageJson = await readPackageJson();
 
 		if (!packageJson) {
 			throw new Error("Failed to read package JSON file. See error logs above...");

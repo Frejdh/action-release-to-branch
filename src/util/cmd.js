@@ -166,7 +166,7 @@ export async function findFilesMatchingPattern(optionsOrPattern, cwd) {
 /**
  * Read a file as text.
  * @param {string} file the file to read.
- * @return {string} a string or null.
+ * @return {Promise<string | null>} a string or null.
  */
 export async function readFileAsText(file) {
 	try {
@@ -180,11 +180,11 @@ export async function readFileAsText(file) {
 /**
  * Read a file as text.
  * @param {string} file the file to read.
- * @return {any | any[]} a JSON object or null.
+ * @return {Promise<any | any[] | null>} a JSON object or null.
  */
 export async function readFileAsJson(file) {
 	try {
-		const text = readFileAsText(file);
+		const text = await readFileAsText(file);
 		return JSON.parse(text);
 	} catch (e) {
 		await log(`Failed to read file as JSON [${file}]. Exception:`, e);
@@ -194,7 +194,7 @@ export async function readFileAsJson(file) {
 
 /**
  * Resolve the package.json file for a node project.
- * @return {PackageJson} a JSON object or null.
+ * @return {Promise<PackageJson | null>} a JSON object or null.
  */
 export async function readPackageJson() {
 	try {
@@ -210,7 +210,7 @@ export async function readPackageJson() {
 		}
 
 		if (PACKAGE_JSON_FILE_PATH_CACHE) {
-			return readFileAsJson(PACKAGE_JSON_FILE_PATH_CACHE);
+			return await readFileAsJson(PACKAGE_JSON_FILE_PATH_CACHE);
 		}
 	} catch (e) {
 		await log(`Failed to read package.json file. Resolved file path [${PACKAGE_JSON_FILE_PATH_CACHE}]. Exception:`, e);
