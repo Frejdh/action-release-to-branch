@@ -199,7 +199,7 @@ runs:
         if [[ "${{ env.NODE_PACKAGE_MANAGER }}" == "npm" ]]; then
           ${{ env.NODE_PACKAGE_MANAGER }} install --legacy-peer-deps      
         else
-          ${{ env.NODE_PACKAGE_MANAGER }} install "${{ inputs.node-build-script }}"
+          ${{ env.NODE_PACKAGE_MANAGER }} install
         fi
 
         ${{ env.NODE_PACKAGE_MANAGER }} run "${{ inputs.node-build-script }}"
