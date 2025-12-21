@@ -206,7 +206,7 @@ export async function readPackageJson() {
 				cwd: appDir,
 				maxDepth: 3
 			});
-			PACKAGE_JSON_FILE_PATH_CACHE = files[0] ? `${appDir}/${files[0]}` : undefined;
+			PACKAGE_JSON_FILE_PATH_CACHE = files[0] || undefined;
 		}
 
 		if (PACKAGE_JSON_FILE_PATH_CACHE) {
