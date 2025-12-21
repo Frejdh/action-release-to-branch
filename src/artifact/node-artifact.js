@@ -42,6 +42,9 @@ export class NodeArtifact extends AbstractArtifact {
 
 			await log(`Keeping ${filesToKeep.length} files:\n`, filesToKeep.map(it => it.replace(`${releaseDir}/`, '')).join('\n'));
 			await log(`Deleting ${filesToDelete.length} files:\n`, filesToDelete.map(it => it.replace(`${releaseDir}/`, '')).join('\n'));
+			for (const file of filesToDelete) {
+				await execAndGetOutput('rm', [file], null, false)
+			}
 		} else {
 			await log("Files will not be deleted as the flag to disable this behavior was set");
 		}
