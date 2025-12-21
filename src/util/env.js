@@ -19,7 +19,7 @@ export function getNodeBuildTargetDirectory() {
  * @return {RegExp[]}
  */
 export function getNodeFilesToKeepPatterns() {
-	return (getEnv().nodeFilesToKeep || '').split(",").map(it => new RegExp(it.trim()));
+	return (getEnv().nodeFilesToKeep || '').split(",").map(it => new RegExp(it.trim())).filter(Boolean);
 }
 
 /**

@@ -9,6 +9,21 @@ import { getEnv } from "./env.js";
 let PACKAGE_JSON_FILE_PATH_CACHE;
 
 /**
+ * @type {string | undefined}
+ */
+let WORKING_DIR_CACHE;
+
+/**
+ * @type {string | undefined}
+ */
+let APP_DIR_CACHE;
+
+/**
+ * @type {string | undefined}
+ */
+let RELEASE_DIR_CACHE;
+
+/**
  *
  * @param {string} baseCmd
  * @param {string[]} argsArray=[]
@@ -73,30 +88,39 @@ export async function getCurrentDirectory() {
  * Reads the working directory from an environment variable if it exists. Otherwise, uses the currently opened directory.
  * @return {Promise<string>}
  */
-export async function getWorkingDirectory() {
-	const directory = await execAndGetOutput('readlink', ['-f', `${getEnv().workingDirectory || '.'}`], null);
-	await log(`Resolved working directory: [${directory}]`);
-	return directory;
+export async function getWorkingDirectory(preferCache = true) {
+	if (!preferCache && !WORKING_DIR_CACHE) {
+		const directory = await execAndGetOutput('readlink', ['-f', `${getEnv().workingDirectory || '.'}`], null);
+		await log(`Resolved working directory: [${directory}]`);
+		WORKING_DIR_CACHE = directory;
+	}
+	return WORKING_DIR_CACHE;
 }
 
 /**
  * Reads the working directory from an environment variable if it exists. Otherwise, uses the currently opened directory.
  * @return {Promise<string>}
  */
-export async function getAppRepositoryDirectory() {
-	const directory = await execAndGetOutput('readlink', ['-f', `${getEnv().appDirectory || '.'}`], null);
-	await log(`Resolved application repository directory: [${directory}]`);
-	return directory;
+export async function getAppRepositoryDirectory(preferCache = true) {
+	if (!preferCache && !APP_DIR_CACHE) {
+		const directory = await execAndGetOutput('readlink', ['-f', `${getEnv().appDirectory || '.'}`], null);
+		APP_DIR_CACHE = directory;
+		await log(`Resolved application repository directory: [${directory}]`);
+	}
+	return APP_DIR_CACHE;
 }
 
 /**
  * Reads the working directory from an environment variable if it exists. Otherwise, uses the currently opened directory.
  * @return {Promise<string>}
  */
-export async function getReleaseRepositoryDirectory() {
-	const directory = await execAndGetOutput('readlink', ['-f', `${getEnv().releaseDirectory || '.'}`], null);
-	await log(`Resolved node build directory: [${directory}]`);
-	return directory;
+export async function getReleaseRepositoryDirectory(preferCache = true) {
+	if (!preferCache && !RELEASE_DIR_CACHE) {
+		const directory = await execAndGetOutput('readlink', ['-f', `${getEnv().releaseDirectory || '.'}`], null);
+		RELEASE_DIR_CACHE = directory;
+		await log(`Resolved node build directory: [${directory}]`);
+	}
+	return RELEASE_DIR_CACHE;
 }
 
 /**

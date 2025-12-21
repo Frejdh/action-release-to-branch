@@ -28,17 +28,20 @@ export class NodeArtifact extends AbstractArtifact {
 			const filesToKeep = [];
 			/** @type {string[]} */
 			const filesToDelete = [];
+			await log(`Patterns: [${filePatternsForKeepingFiles.map(it => it.source).join('  ||  ')}]`);
 
-			allFiles.forEach(file => {
-				if (filePatternsForKeepingFiles.some(pattern => pattern.exec(file.replace(`${releaseDir}/`, '')))) {
+			for (const file of allFiles) {
+				const relativeFilePath = file.replace(`${releaseDir}/`, '');
+				await log(`Testing file: ${relativeFilePath}`);
+				if (filePatternsForKeepingFiles.some(pattern => pattern.exec(relativeFilePath))) {
 					filesToKeep.push(file);
 				} else {
 					filesToDelete.push(file);
 				}
-			});
+			}
 
-			await log(`Keeping ${filesToKeep.length} files:`, filesToKeep.map(it => it.replace(`${releaseDir}/`, '')));
-			await log(`Deleting ${filesToDelete.length} files:`, filesToDelete.map(it => it.replace(`${releaseDir}/`, '')));
+			await log(`Keeping ${filesToKeep.length} files:\n`, filesToKeep.map(it => it.replace(`${releaseDir}/`, '')).join('\n'));
+			await log(`Deleting ${filesToDelete.length} files:\n`, filesToDelete.map(it => it.replace(`${releaseDir}/`, '')).join('\n'));
 		} else {
 			await log("Files will not be deleted as the flag to disable this behavior was set");
 		}
