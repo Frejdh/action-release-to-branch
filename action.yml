@@ -93,7 +93,7 @@ inputs:
     description: Release branch name for built Node content
     required: false
 
-  npm-build-script:
+  node-build-script:
     description: The name of the NPM script that builds the node project
     default: 'build'
     required: false
@@ -197,10 +197,10 @@ runs:
         if [[ "${{ env.NODE_PACKAGE_MANAGER }}" == "npm" ]]; then
           ${{ env.NODE_PACKAGE_MANAGER }} install --legacy-peer-deps      
         else
-          ${{ env.NODE_PACKAGE_MANAGER }} install "${{ inputs.npm-build-script }}"
+          ${{ env.NODE_PACKAGE_MANAGER }} install "${{ inputs.node-build-script }}"
         fi
 
-        ${{ env.NODE_PACKAGE_MANAGER }} run "${{ inputs.npm-build-script }}"
+        ${{ env.NODE_PACKAGE_MANAGER }} run "${{ inputs.node-build-script }}"
 
     # Common release steps
     - name: Checkout repository to release on
