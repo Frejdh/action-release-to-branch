@@ -1,4 +1,3 @@
-import * as core from "@actions/core";
 import * as core from '@actions/core';
 import { execAndGetOutput, findFilesMatchingPattern, getReleaseRepositoryDirectory, log } from "../util/cmd.js";
 import { AbstractArtifact } from "./abstract-artifact.js";

@@ -1,4 +1,3 @@
-import * as core from "@actions/core";
 import { GradleArtifact } from "./artifact/gradle-artifact.js";
 import { MavenArtifact } from "./artifact/maven-artifact.js";
 import { NodeArtifact } from "./artifact/node-artifact.js";
