@@ -94,7 +94,7 @@ export async function getAppRepositoryDirectory() {
  * @return {Promise<string>}
  */
 export async function getReleaseRepositoryDirectory() {
-	const directory = await execAndGetOutput('readlink', ['-f', `${getEnv().nodeBuildTargetDir || '.'}`], null);
+	const directory = await execAndGetOutput('readlink', ['-f', `${getEnv().releaseDirectory || '.'}`], null);
 	await log(`Resolved node build directory: [${directory}]`);
 	return directory;
 }

@@ -1,4 +1,4 @@
-import { execAndGetOutput, findFilesMatchingPattern, getAppRepositoryDirectory, getReleaseRepositoryDirectory, log, readFileAsJson, readPackageJson } from "../util/cmd.js";
+import { execAndGetOutput, findFilesMatchingPattern, getAppRepositoryDirectory, getReleaseRepositoryDirectory, log, readPackageJson } from "../util/cmd.js";
 import { getNodeBuildTargetDirectory, getNodeFilesToKeepPatterns, shouldDeleteOldNodeFiles } from "../util/env.js";
 import { AbstractArtifact } from "./abstract-artifact.js";
 
@@ -9,8 +9,8 @@ export class NodeArtifact extends AbstractArtifact {
 	 * @return {Promise<string[]>} files
 	 */
 	async getContentToCopy(filesToInspect = []) {
-		const cwd = await getAppRepositoryDirectory();
-		const buildDirectory = `${cwd}/${getNodeBuildTargetDirectory()}`;
+		const appDir = await getAppRepositoryDirectory();
+		const buildDirectory = `${appDir}/${getNodeBuildTargetDirectory()}`;
 		return findFilesMatchingPattern('*', buildDirectory);
 	}
 
@@ -19,8 +19,8 @@ export class NodeArtifact extends AbstractArtifact {
 		await log('deleteOldNodeFiles', deleteOldNodeFiles);
 
 		if (deleteOldNodeFiles) {
-			const cwd = await getAppRepositoryDirectory();
-			const allFiles = await findFilesMatchingPattern("*", cwd);
+			const appDir = await getAppRepositoryDirectory();
+			const allFiles = await findFilesMatchingPattern("*", appDir);
 			const filesToKeep = getNodeFilesToKeepPatterns();
 			const filesToDelete = allFiles.filter(it => !filesToKeep.some(pattern => pattern.exec(it)))
 			await log('FILES TO DELETE', filesToDelete);
