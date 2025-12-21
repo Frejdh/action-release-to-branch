@@ -37,10 +37,6 @@ export default async function script() {
 	await checkoutBranch(releaseBranch, releaseRepositoryDir);
 	await frameworkImpl.preprocessBeforeCopy();
 	await frameworkImpl.copyContent(filesOrArtifactsToCopy);
-
-	const appInfo = await frameworkImpl.getAppInfo(filesToInspect);
-	core.exportVariable('RELEASE_NAME', appInfo.name);
-	core.exportVariable('RELEASE_VERSION', appInfo.version);
 }
 
 /**

@@ -196,12 +196,14 @@ runs:
       shell: bash
       working-directory: ./${{ env.APP_REPO_DIR }}
       run: |
+        echo "Installing node packages"
         if [[ "${{ env.NODE_PACKAGE_MANAGER }}" == "npm" ]]; then
           ${{ env.NODE_PACKAGE_MANAGER }} install --legacy-peer-deps      
         else
           ${{ env.NODE_PACKAGE_MANAGER }} install
         fi
 
+        echo "Building node project"
         ${{ env.NODE_PACKAGE_MANAGER }} run "${{ inputs.node-build-script }}"
 
     # Common release steps
@@ -255,14 +257,14 @@ runs:
         github_token: "${{ inputs.github-token }}"
         directory: "${{ env.RELEASE_REPO_DIR }}"
 
-    - name: Determine release version
+    - name: Resolve application information
       uses: actions/github-script@v8
       env:
         projectFramework: "${{ inputs.project-framework }}"
         appDirectory: "${{ env.APP_REPO_DIR }}"
       with:
         script: |
-          const { default: script } = await import("${{ github.action_path }}/src/detect-release-version.js");
+          const { default: script } = await import("${{ github.action_path }}/src/resolve-app-info.js");
           await script();
 
     - name: Copy artifacts to branch

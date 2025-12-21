@@ -1,4 +1,4 @@
-import { execAndGetOutput, findFilesMatchingPattern, getAppRepositoryDirectory, getReleaseRepositoryDirectory, log } from "../util/cmd.js";
+import { execAndGetOutput, findFilesMatchingPattern, getAppRepositoryDirectory, getReleaseRepositoryDirectory, log, readFileAsJson, readPackageJson } from "../util/cmd.js";
 import { getNodeBuildTargetDirectory, getNodeFilesToKeepPatterns, shouldDeleteOldNodeFiles } from "../util/env.js";
 import { AbstractArtifact } from "./abstract-artifact.js";
 
@@ -51,7 +51,12 @@ export class NodeArtifact extends AbstractArtifact {
 	 * @return {AppInfo}
 	 */
 	async getAppInfo(artifactsOrFiles) {
-		const packageJson = require(`${await getAppRepositoryDirectory()}/package.json`);
+		const packageJson = readPackageJson();
+
+		if (!packageJson) {
+			throw new Error("Failed to read package JSON file. See error logs above...");
+		}
+
 		return {
 			name: packageJson.name,
 			version: packageJson.version,
