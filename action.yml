@@ -187,8 +187,9 @@ runs:
       uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.node-version }}
-        cache: ${{ env.NODE_PACKAGE_MANAGER }}
-        cache-dependency-path: ${{ env.APP_REPO_DIR }}
+# FIXME: Look into the cache issues
+#        cache: ${{ env.NODE_PACKAGE_MANAGER }}
+#        cache-dependency-path: ${{ env.APP_REPO_DIR }}
 
     - name: Build Node project
       if: env.PROJECT_FRAMEWORK == 'node'
