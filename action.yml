@@ -67,6 +67,10 @@ inputs:
     description: Release branch name for Python PIP packages
     required: false
 
+  release-branch-name:
+    description: Release branch name. Matching framework branch names takes precedence
+    required: false
+
   create-tag-enabled:
     description: Whether tags should be created (in the originating repository). The tag name will be the first found artifact's/package's version
     required: false
@@ -212,10 +216,10 @@ runs:
       uses: actions/github-script@v8
       env:
         projectFramework: "${{ inputs.project-framework }}"
-        mavenBranch: "${{ inputs.release-branch-name-maven }}"
-        gradleBranch: "${{ inputs.release-branch-name-gradle }}"
-        npmBranch: "${{ inputs.release-branch-name-npm }}"
-        pypiBranch: "${{ inputs.release-branch-name-pypi }}"
+        mavenBranch: "${{ inputs.release-branch-name-maven || inputs.release-branch-name }}"
+        gradleBranch: "${{ inputs.release-branch-name-gradle || inputs.release-branch-name }}"
+        npmBranch: "${{ inputs.release-branch-name-npm || inputs.release-branch-name }}"
+        pypiBranch: "${{ inputs.release-branch-name-pypi || inputs.release-branch-name }}"
       with:
         script: |
           const { default: script } = await import("${{ github.action_path }}/src/detect-release-branch.js");
@@ -253,13 +257,10 @@ runs:
       uses: actions/github-script@v8
       env:
         projectFramework: "${{ inputs.project-framework }}"
-        mavenBranch: "${{ inputs.release-branch-name-maven }}"
-        gradleBranch: "${{ inputs.release-branch-name-gradle }}"
-        npmBranch: "${{ inputs.release-branch-name-npm }}"
-        pypiBranch: "${{ inputs.release-branch-name-pypi }}"
+        appDirectory: "${{ env.APP_REPO_DIR }}"
       with:
         script: |
-          const { default: script } = await import("${{ github.action_path }}/src/detect-release-branch.js");
+          const { default: script } = await import("${{ github.action_path }}/src/detect-release-version.js");
           await script();
 
     - name: Copy artifacts to branch

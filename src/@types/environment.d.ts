@@ -6,6 +6,11 @@ export interface DetectBranchEnv {
 	pypiBranch?: string;
 }
 
+export interface DetectVersionEnv {
+	projectFramework?: string;
+	appDirectory?: string;
+}
+
 export interface CopyContentEnv {
 	projectFramework?: string;
 	appDirectory?: string;
@@ -25,7 +30,7 @@ export interface TagEnv {
 	pushWithForce?: string;
 }
 
-export interface Env extends DetectBranchEnv, CopyContentEnv, TagEnv { }
+export interface Env extends DetectBranchEnv, DetectVersionEnv, CopyContentEnv, TagEnv { }
 
 declare const process: {
 	env: Env | { [key: string]: string | undefined };
