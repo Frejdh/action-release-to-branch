@@ -89,7 +89,7 @@ export async function getCurrentDirectory() {
  * @return {Promise<string>}
  */
 export async function getWorkingDirectory(preferCache = true) {
-	if (!preferCache && !WORKING_DIR_CACHE) {
+	if (!WORKING_DIR_CACHE || !preferCache) {
 		const directory = await execAndGetOutput('readlink', ['-f', `${getEnv().workingDirectory || '.'}`], null);
 		await log(`Resolved working directory: [${directory}]`);
 		WORKING_DIR_CACHE = directory;
@@ -102,7 +102,7 @@ export async function getWorkingDirectory(preferCache = true) {
  * @return {Promise<string>}
  */
 export async function getAppRepositoryDirectory(preferCache = true) {
-	if (!preferCache && !APP_DIR_CACHE) {
+	if (!APP_DIR_CACHE || !preferCache) {
 		const directory = await execAndGetOutput('readlink', ['-f', `${getEnv().appDirectory || '.'}`], null);
 		APP_DIR_CACHE = directory;
 		await log(`Resolved application repository directory: [${directory}]`);
@@ -115,7 +115,7 @@ export async function getAppRepositoryDirectory(preferCache = true) {
  * @return {Promise<string>}
  */
 export async function getReleaseRepositoryDirectory(preferCache = true) {
-	if (!preferCache && !RELEASE_DIR_CACHE) {
+	if (!RELEASE_DIR_CACHE || !preferCache) {
 		const directory = await execAndGetOutput('readlink', ['-f', `${getEnv().releaseDirectory || '.'}`], null);
 		RELEASE_DIR_CACHE = directory;
 		await log(`Resolved node build directory: [${directory}]`);
