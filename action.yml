@@ -176,7 +176,7 @@ runs:
       run: |
         if [[ -f "yarn.lock" ]]; then
           echo "NODE_PACKAGE_MANAGER=yarn" >> $GITHUB_ENV
-        if [[ -f "pnpm.yaml" ]]; then
+        elif [[ -f "pnpm.yaml" ]]; then
           echo "NODE_PACKAGE_MANAGER=pnpm" >> $GITHUB_ENV
         else 
          echo "NODE_PACKAGE_MANAGER=npm" >> $GITHUB_ENV
