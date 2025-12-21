@@ -126,7 +126,7 @@ export async function getReleaseRepositoryDirectory(preferCache = true) {
 /**
  * @param {FindFilesOptions | string | string[]} optionsOrPattern bash `find -iname` syntax
  * @param {string?} cwd Optional directory to base the search on. Relative path from working directory. Only used when providing string arguments for the first parameter.
- * @return {Promise<string[]>}
+ * @return {Promise<string[]>} The paths as `absolute` paths.
  */
 export async function findFilesMatchingPattern(optionsOrPattern, cwd) {
 	/**
