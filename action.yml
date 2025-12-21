@@ -104,8 +104,8 @@ inputs:
     required: false
 
   delete-old-node-files:
-    default: 'true'
-    description: Whether to delete old node files. Only applicable for Node projects
+    default: 'false'
+    description: Whether to delete old node files in the release repository and branch. Only applicable for Node projects. Recommended for Github pages only!
     required: false
   #    type: 'boolean'
 

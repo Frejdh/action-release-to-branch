@@ -126,12 +126,12 @@ export async function findFilesMatchingPattern(optionsOrPattern, cwd) {
 	];
 
 	// Include pattern
-	(Array.isArray(options.include) ? options.include : [options.include]).forEach(filePattern => {
+	(Array.isArray(options.include) ? options.include : [options.include]).filter(Boolean).forEach(filePattern => {
 		args.push('-iname', `${filePattern}`);
 	});
 
 	// Exclude pattern
-	(Array.isArray(options.exclude) ? options.exclude : [options.exclude]).forEach(filePattern => {
+	(Array.isArray(options.exclude) ? options.exclude : [options.exclude]).filter(Boolean).forEach(filePattern => {
 		args.push('-not', '-path', `${filePattern}`);
 	});
 

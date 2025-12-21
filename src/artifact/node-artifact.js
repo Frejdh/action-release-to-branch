@@ -19,10 +19,10 @@ export class NodeArtifact extends AbstractArtifact {
 		await log('deleteOldNodeFiles', deleteOldNodeFiles);
 
 		if (deleteOldNodeFiles) {
-			const appDir = await getAppRepositoryDirectory();
-			const allFiles = await findFilesMatchingPattern("*", appDir);
+			const releaseDir = await getReleaseRepositoryDirectory();
+			const allFiles = await findFilesMatchingPattern("*", releaseDir);
 			const filesToKeep = getNodeFilesToKeepPatterns();
-			const filesToDelete = allFiles.filter(it => !filesToKeep.some(pattern => pattern.exec(it)))
+			const filesToDelete = allFiles.filter(it => !filesToKeep.some(pattern => pattern.exec(it.replace(`${releaseDir}/`, ''))))
 			await log('FILES TO DELETE', filesToDelete);
 
 			await log(`${filesToDelete.length} of old directory files will be deleted`);
