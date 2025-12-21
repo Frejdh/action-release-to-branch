@@ -179,7 +179,7 @@ runs:
         elif [[ -f "pnpm.yaml" ]]; then
           echo "NODE_PACKAGE_MANAGER=pnpm" >> $GITHUB_ENV
         else 
-         echo "NODE_PACKAGE_MANAGER=npm" >> $GITHUB_ENV
+          echo "NODE_PACKAGE_MANAGER=npm" >> $GITHUB_ENV
         fi
 
     - name: Set up Node ${{ inputs.node-version }}
@@ -188,6 +188,7 @@ runs:
       with:
         node-version: ${{ inputs.node-version }}
         cache: ${{ env.NODE_PACKAGE_MANAGER }}
+        cache-dependency-path: ${{ env.APP_REPO_DIR }}
 
     - name: Build Node project
       if: env.PROJECT_FRAMEWORK == 'node'
