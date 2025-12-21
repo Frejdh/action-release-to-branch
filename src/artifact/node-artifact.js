@@ -62,9 +62,9 @@ export class NodeArtifact extends AbstractArtifact {
 			const targetParentDir = relativeParentDir ? `${releaseDir}/${relativeParentDir}` : undefined;
 
 			if (targetParentDir && !existsSync(targetParentDir)) {
-				await execAndGetOutput('mkdir', ['-p', targetParentDir]);
+				await execAndGetOutput('mkdir', ['-p', targetParentDir], null, false);
 			}
-			await execAndGetOutput('cp', [file, `${releaseDir}/${relativeFilePath}`])
+			await execAndGetOutput('cp', [file, `${releaseDir}/${relativeFilePath}`], null, false)
 		}
 	}
 

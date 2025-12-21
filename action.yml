@@ -110,7 +110,7 @@ inputs:
   #    type: 'boolean'
 
   node-files-to-keep:
-    default: 'README.md, readme.md, [.].*'
+    default: '^README.md$, ^readme.md$, ^[.].*'
     description: Whether to delete old node files. Only applicable 'delete-old-node-files' is enabled. Comma separated regex patterns
     required: false
 
