@@ -48,11 +48,11 @@ export async function execAndGetOutput(baseCmd, argsArray = [], workingDirectory
 
 /**
  * Log a message in the console.
- * @param {any} message
+ * @param {...any} message
  * @return {Promise<void>}
  */
-export async function log(message) {
-	await execAndGetOutput(`echo "${message?.toString().replaceAll('"', '\\"')}"`, [], null, false);
+export async function log(...message) {
+	await execAndGetOutput(`echo "${message?.join(' ')?.replaceAll('"', '\\"')}"`, [], null, false);
 }
 
 /**
@@ -89,8 +89,8 @@ export async function getAppRepositoryDirectory() {
  * @return {Promise<string>}
  */
 export async function getReleaseRepositoryDirectory() {
-	const directory = await execAndGetOutput('readlink', ['-f', `${getEnv().releaseDirectory || '.'}`], null);
-	await log(`Resolved release repository directory: [${directory}]`);
+	const directory = await execAndGetOutput('readlink', ['-f', `${getEnv().nodeBuildTargetDir || '.'}`], null);
+	await log(`Resolved node build directory: [${directory}]`);
 	return directory;
 }
 
