@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { execAndGetOutput, findFilesMatchingPattern, getAppRepositoryDirectory, getReleaseRepositoryDirectory, log, readPackageJson } from "../util/cmd.js";
 import { getNodeBuildTargetDirectory, getNodeFilesToKeepPatterns, shouldDeleteOldNodeFiles } from "../util/env.js";
 import { AbstractArtifact } from "./abstract-artifact.js";
@@ -21,17 +22,26 @@ export class NodeArtifact extends AbstractArtifact {
 		if (deleteOldNodeFiles) {
 			const releaseDir = await getReleaseRepositoryDirectory();
 			const allFiles = await findFilesMatchingPattern("*", releaseDir);
-			const filesToKeep = getNodeFilesToKeepPatterns();
-			const filesToDelete = allFiles.filter(it => !filesToKeep.some(pattern => pattern.exec(it.replace(`${releaseDir}/`, ''))))
-			await log('FILES TO DELETE', filesToDelete);
+			const filePatternsForKeepingFiles = getNodeFilesToKeepPatterns();
 
-			await log(`${filesToDelete.length} of old directory files will be deleted`);
+			/** @type {string[]} */
+			const filesToKeep = [];
+			/** @type {string[]} */
+			const filesToDelete = [];
+
+			allFiles.forEach(file => {
+				if (filePatternsForKeepingFiles.some(pattern => pattern.exec(file.replace(`${releaseDir}/`, '')))) {
+					filesToKeep.push(file);
+				} else {
+					filesToDelete.push(file);
+				}
+			});
+
+			await log(`Keeping ${filesToKeep.length} files:`, filesToKeep.map(it => it.replace(`${releaseDir}/`, '')));
+			await log(`Deleting ${filesToDelete.length} files:`, filesToDelete.map(it => it.replace(`${releaseDir}/`, '')));
 		} else {
 			await log("Files will not be deleted as the flag to disable this behavior was set");
 		}
-
-
-		// TODO:
 	}
 
 	/**
@@ -43,7 +53,16 @@ export class NodeArtifact extends AbstractArtifact {
 		const releaseDir = await getReleaseRepositoryDirectory();
 		const buildDir = getNodeBuildTargetDirectory();
 
-		await execAndGetOutput('cp ', ['-r', '-T', `${appDir}/${buildDir}/.`, releaseDir])
+		for (const file of files) {
+			const relativeFilePath = file.replace(`${appDir}/${buildDir}/`, '');
+			const relativeParentDir = relativeFilePath.includes('/') ? relativeFilePath.replaceAll(/(\/)(?!.*\/).+/g, '') : undefined;
+			const targetParentDir = relativeParentDir ? `${releaseDir}/${relativeParentDir}` : undefined;
+
+			if (targetParentDir && !existsSync(targetParentDir)) {
+				await execAndGetOutput('mkdir', ['-p', targetParentDir]);
+			}
+			await execAndGetOutput('cp', [file, `${releaseDir}/${relativeFilePath}`])
+		}
 	}
 
 	/**
