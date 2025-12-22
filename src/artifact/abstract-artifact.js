@@ -8,9 +8,8 @@ export class AbstractArtifact {
 	}
 
 	async preprocessBeforeCopy() {
+		// Do nothing
 	}
-
-	/**
 
 	/**
 	 *

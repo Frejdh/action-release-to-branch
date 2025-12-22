@@ -17,8 +17,8 @@ describe('Find and copy artifacts', () => {
 		process.env = ORIGINAL_ENV;
 	});
 
-	let framework = spyOn(Script, 'getFramework').and.callThrough();
-	let execAndGetOutput = spyOn(Cmd, 'execAndGetOutput').and.returnValue(Promise.resolve('OUTPUT'));
+	let framework = spyOn(Script, 'getFramework').and.callThrough(); // NOSONAR
+	let execAndGetOutput = spyOn(Cmd, 'execAndGetOutput').and.returnValue(Promise.resolve('OUTPUT')); // NOSONAR
 
 	function modifyEnv(env: CopyContentEnv): void {
 		process.env = {

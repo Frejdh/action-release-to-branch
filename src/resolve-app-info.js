@@ -5,7 +5,6 @@ import { getFramework } from "./find-and-copy-content.js";
 export default async function script() {
 	const {
 		projectFramework,
-		appDirectory
 	} = process.env;
 
 	/**
