@@ -4,8 +4,11 @@ import { asBoolean } from "./util/convert.js";
 
 // https://github.com/actions/github-script
 export default async function script() {
+	/**
+	 * @type TagEnv
+	 */
 	const {
-		defaultBranch,
+		projectCommitish,
 		releaseVersion,
 		pushWithForce,
 		allowedTagPattern,
@@ -14,7 +17,7 @@ export default async function script() {
 	const isAllowedPattern = await checkIfAllowedTagPattern(allowedTagPattern, releaseVersion);
 	const isPushingWithForce = asBoolean(pushWithForce);
 	if (isAllowedPattern) {
-		await checkoutBranch(defaultBranch);
+		await checkoutBranch(projectCommitish);
 
 		if (isPushingWithForce || !(await isTagOnRemote(releaseVersion))) {
 			await createTag(releaseVersion, `Release for version ${releaseVersion}`);

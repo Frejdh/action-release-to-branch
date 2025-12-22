@@ -4,23 +4,35 @@ export class AbstractArtifact {
 	 * @return {Promise<string[]>} files to inspect. Path is relative to the root of the project directory
 	 */
 	async getFilesToInspect() {
-		throw new Error(`getFilesToInspect() not implemented`);
+		return [];
+	}
+
+	async preprocessBeforeCopy() {
+		// Do nothing
 	}
 
 	/**
 	 *
-	 * @param {string[]} filesToInspect=[] files
-	 * @return {Artifact[]} artifacts
+	 * @param {string[]} filesToInspect files
+	 * @return {Promise<(Artifact | string)[]>} files or artifacts
 	 */
-	async getArtifactsToCopy(filesToInspect = []) {
-		throw new Error('getArtifactsToCopy() not implemented');
+	async getContentToCopy(filesToInspect = []) {
+		throw new Error('getContentToCopy() not implemented');
 	}
 
 	/**
-	 * @param {Artifact[]} artifacts
+	 * @param {(Artifact | string)[]} artifactsOrFiles files or artifacts
 	 */
-	async copyArtifacts(artifacts) {
+	async copyContent(artifactsOrFiles) {
 		throw new Error('copyArtifacts() not implemented');
+	}
+
+	/**
+	 * @param {(Artifact | string)[]} artifactsOrFiles files or artifacts
+	 * @return {AppInfo}
+	 */
+	async getAppInfo(artifactsOrFiles) {
+		throw new Error('getAppVersion() not implemented');
 	}
 
 }

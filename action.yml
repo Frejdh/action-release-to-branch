@@ -4,19 +4,24 @@ description: Action for building and testing maven repositories
 inputs:
 
   github-token:
-    description: Either use `secrets.GITHUB_TOKEN` for the same repository. Or for other repositories, use a personal access token.
+    description: Either use `secrets.GITHUB_TOKEN` for the same repository. Or for other repositories, use a personal access token
     required: true
     default: ''
 
   java-version:
-    description: JDK version to use. Default is '21'.
+    description: JDK version to use. Default is '21'
     required: false
     default: '21'
 
   java-distribution:
-    description: JDK distribution to use. Default is 'temurin'.
+    description: JDK distribution to use. Default is 'temurin'
     required: false
     default: 'temurin'
+
+  node-version:
+    description: Node version to use. Default is '24'
+    required: false
+    default: '24'
 
   cache-id:
     description: ID (subkey) for the cache
@@ -32,6 +37,7 @@ inputs:
     default: Maven
 #    options:
 #      - Maven
+#      - Node
 #      - Gradle
 #      - NPM
 #      - PyPi
@@ -61,6 +67,10 @@ inputs:
     description: Release branch name for Python PIP packages
     required: false
 
+  release-branch-name:
+    description: Release branch name. Matching framework branch names takes precedence
+    required: false
+
   create-tag-enabled:
     description: Whether tags should be created (in the originating repository). The tag name will be the first found artifact's/package's version
     required: false
@@ -78,6 +88,31 @@ inputs:
     default: 'false'
 #    type: boolean
 
+  ### Node Options
+  release-branch-name-node:
+    description: Release branch name for built Node content
+    required: false
+
+  node-build-script:
+    description: The name of the NPM script that builds the node project
+    default: 'build'
+    required: false
+
+  node-build-target-directory:
+    description: The directory where the built Node files are located
+    default: 'dist/ui'
+    required: false
+
+  delete-old-node-files:
+    default: 'false'
+    description: Whether to delete old node files in the release repository and branch. Only applicable for Node projects. Recommended for Github pages only!
+    required: false
+  #    type: 'boolean'
+
+  node-files-to-keep:
+    default: '^README.md$, ^readme.md$, ^[.].*'
+    description: Whether to delete old node files. Only applicable 'delete-old-node-files' is enabled. Comma separated regex patterns
+    required: false
 
 runs:
   using: composite
@@ -108,13 +143,16 @@ runs:
         persist-credentials: true
         fetch-depth: 0
 
+    # Maven/Gradle
     - name: Set up JDK ${{ inputs.java-version }} (${{ inputs.java-distribution }})
+      if: env.PROJECT_FRAMEWORK == 'maven' || env.PROJECT_FRAMEWORK == 'gradle'
       uses: actions/setup-java@v3
       with:
         java-version: ${{ inputs.java-version }}
         distribution: ${{ inputs.java-distribution }}
 
     - name: Set up cache for Maven repository
+      if: env.PROJECT_FRAMEWORK == 'maven' || env.PROJECT_FRAMEWORK == 'gradle'
       uses: actions/cache@v4
       with:
         path: ~/.m2/repository
@@ -128,9 +166,47 @@ runs:
       working-directory: ./${{ env.APP_REPO_DIR }}
       run: |
         mkdir -p "${{ env.LOCAL_REPOSITORY_DIR }}"
-        echo "DEFAULT_BRANCH=$(git remote show origin | awk '/HEAD branch/ {print $NF}')" >> $GITHUB_ENV
         mvn -B install source:jar javadoc:jar install -Dencoding="UTF-8" -DcreateChecksum=true -DadditionalJOption="-Xdoclint:none" -e ${{ inputs.build-arguments }}
 
+    # Node
+    - name: Detect Node package manager
+      if: env.PROJECT_FRAMEWORK == 'node' || env.PROJECT_FRAMEWORK == 'npm'
+      shell: bash
+      working-directory: ./${{ env.APP_REPO_DIR }}
+      run: |
+        if [[ -f "yarn.lock" ]]; then
+          echo "NODE_PACKAGE_MANAGER=yarn" >> $GITHUB_ENV
+        elif [[ -f "pnpm.yaml" ]]; then
+          echo "NODE_PACKAGE_MANAGER=pnpm" >> $GITHUB_ENV
+        else 
+          echo "NODE_PACKAGE_MANAGER=npm" >> $GITHUB_ENV
+        fi
+
+    - name: Set up Node ${{ inputs.node-version }}
+      if: env.PROJECT_FRAMEWORK == 'node' || env.PROJECT_FRAMEWORK == 'npm'
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node-version }}
+# FIXME: Look into the cache issues
+#        cache: ${{ env.NODE_PACKAGE_MANAGER }}
+#        cache-dependency-path: ${{ env.APP_REPO_DIR }}
+
+    - name: Build Node project
+      if: env.PROJECT_FRAMEWORK == 'node'
+      shell: bash
+      working-directory: ./${{ env.APP_REPO_DIR }}
+      run: |
+        echo "Installing node packages"
+        if [[ "${{ env.NODE_PACKAGE_MANAGER }}" == "npm" ]]; then
+          ${{ env.NODE_PACKAGE_MANAGER }} install --legacy-peer-deps      
+        else
+          ${{ env.NODE_PACKAGE_MANAGER }} install
+        fi
+
+        echo "Building node project"
+        ${{ env.NODE_PACKAGE_MANAGER }} run "${{ inputs.node-build-script }}"
+
+    # Common release steps
     - name: Checkout repository to release on
       uses: actions/checkout@v5
       with:
@@ -144,10 +220,10 @@ runs:
       uses: actions/github-script@v8
       env:
         projectFramework: "${{ inputs.project-framework }}"
-        mavenBranch: "${{ inputs.release-branch-name-maven }}"
-        gradleBranch: "${{ inputs.release-branch-name-gradle }}"
-        npmBranch: "${{ inputs.release-branch-name-npm }}"
-        pypiBranch: "${{ inputs.release-branch-name-pypi }}"
+        mavenBranch: "${{ inputs.release-branch-name-maven || inputs.release-branch-name }}"
+        gradleBranch: "${{ inputs.release-branch-name-gradle || inputs.release-branch-name }}"
+        npmBranch: "${{ inputs.release-branch-name-npm || inputs.release-branch-name }}"
+        pypiBranch: "${{ inputs.release-branch-name-pypi || inputs.release-branch-name }}"
       with:
         script: |
           const { default: script } = await import("${{ github.action_path }}/src/detect-release-branch.js");
@@ -181,18 +257,30 @@ runs:
         github_token: "${{ inputs.github-token }}"
         directory: "${{ env.RELEASE_REPO_DIR }}"
 
+    - name: Resolve application information
+      uses: actions/github-script@v8
+      env:
+        projectFramework: "${{ inputs.project-framework }}"
+        appDirectory: "${{ env.APP_REPO_DIR }}"
+      with:
+        script: |
+          const { default: script } = await import("${{ github.action_path }}/src/resolve-app-info.js");
+          await script();
+
     - name: Copy artifacts to branch
       uses: actions/github-script@v8
       env:
         projectFramework: "${{ inputs.project-framework }}"
-        workingDirectory: "${{ env.RELEASE_REPO_DIR }}"
         appDirectory: "${{ env.APP_REPO_DIR }}"
         releaseDirectory: "${{ env.RELEASE_REPO_DIR }}"
-        defaultBranch: "${{ env.DEFAULT_BRANCH }}"
+        projectCommitish: "${{ inputs.commitish }}"
         releaseBranch: "${{ env.RELEASE_BRANCH }}"
+        nodeBuildTargetDir: "${{ inputs.node-build-target-directory }}"
+        deleteOldNodeFiles: "${{ inputs.delete-old-node-files }}"
+        nodeFilesToKeep: "${{ inputs.node-files-to-keep }}"
       with:
         script: |
-          const { default: script } = await import("${{ github.action_path }}/src/find-and-copy-artifacts.js");
+          const { default: script } = await import("${{ github.action_path }}/src/find-and-copy-content.js");
           await script();
 
     - name: Create release commit
@@ -200,7 +288,7 @@ runs:
       working-directory: ./${{ env.RELEASE_REPO_DIR }}
       run: |
         git add .
-        git commit --allow-empty -m "New release build [${{ env.RELEASE_VERSION }}] for ${{ github.repository }}"
+        git commit --allow-empty -m "New release build [${{ env.RELEASE_NAME }}:${{ env.RELEASE_VERSION }}] from ${{ github.repository }}"
 
     - name: Push to release branch
       uses: ad-m/github-push-action@v0.8.0
@@ -215,7 +303,7 @@ runs:
       uses: actions/github-script@v8
       env:
         workingDirectory: "${{ env.APP_REPO_DIR }}"
-        defaultBranch: "${{ env.DEFAULT_BRANCH }}"
+        projectCommitish: "${{ inputs.commitish }}"
         releaseVersion: "${{ env.RELEASE_VERSION }}"
         allowedTagPattern: "${{ inputs.create-tag-pattern }}"
         pushWithForce: "${{ inputs.create-tag-allow-override }}"
