@@ -9,11 +9,16 @@ Frejdh/action-release-to-branch@master
 * Java/Kotlin
     * Maven
     * Gradle
+* Javascript/Typescript (Github Pages deployment):
+    * NPM
+    * PNPM
+    * Yarn
 
 ### Work in progress
 Not added, but being worked on.
-* Javascript/Typescript
+* Javascript/Typescript (dependencies):
     * NPM
+    * Yarn
 * Python
     * PyPI
 
@@ -312,3 +317,4 @@ jobs:
           node-files-to-keep: ${{ inputs.node-files-to-keep }}
           delete-old-node-files: ${{ inputs.delete-old-node-files }}
 ```
+
