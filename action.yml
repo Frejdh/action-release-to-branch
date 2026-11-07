@@ -9,9 +9,9 @@ inputs:
     default: ''
 
   java-version:
-    description: JDK version to use. Default is '21'
+    description: JDK version to use. Default is '25'
     required: false
-    default: '21'
+    default: '25'
 
   java-distribution:
     description: JDK distribution to use. Default is 'temurin'
@@ -135,7 +135,7 @@ runs:
         fi
 
     - name: Checkout branch code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v7
       with:
         path: "${{ env.APP_REPO_DIR }}"
         ref: "${{ inputs.commitish }}"
@@ -146,14 +146,14 @@ runs:
     # Maven/Gradle
     - name: Set up JDK ${{ inputs.java-version }} (${{ inputs.java-distribution }})
       if: env.PROJECT_FRAMEWORK == 'maven' || env.PROJECT_FRAMEWORK == 'gradle'
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v6
       with:
         java-version: ${{ inputs.java-version }}
         distribution: ${{ inputs.java-distribution }}
 
     - name: Set up cache for Maven repository
       if: env.PROJECT_FRAMEWORK == 'maven' || env.PROJECT_FRAMEWORK == 'gradle'
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ~/.m2/repository
         key: maven-${{ inputs.cache-id }}-${{ hashFiles('**/pom.xml') }}
@@ -184,7 +184,7 @@ runs:
 
     - name: Set up Node ${{ inputs.node-version }}
       if: env.PROJECT_FRAMEWORK == 'node' || env.PROJECT_FRAMEWORK == 'npm'
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v7
       with:
         node-version: ${{ inputs.node-version }}
 # FIXME: Look into the cache issues
@@ -208,7 +208,7 @@ runs:
 
     # Common release steps
     - name: Checkout repository to release on
-      uses: actions/checkout@v5
+      uses: actions/checkout@v7
       with:
         path: "${{ env.RELEASE_REPO_DIR }}"
         token: "${{ inputs.github-token }}"
@@ -217,7 +217,7 @@ runs:
         fetch-depth: 0
 
     - name: Determine release branch
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       env:
         projectFramework: "${{ inputs.project-framework }}"
         mavenBranch: "${{ inputs.release-branch-name-maven || inputs.release-branch-name }}"
@@ -250,7 +250,7 @@ runs:
 
     - name: Push new release branch to remote
       if: env.RELEASE_BRANCH_CREATED == 'true'
-      uses: ad-m/github-push-action@v0.8.0
+      uses: ad-m/github-push-action@v1
       with:
         repository: "${{ inputs.release-branch-repository }}"
         branch: "${{ env.RELEASE_BRANCH }}"
@@ -258,7 +258,7 @@ runs:
         directory: "${{ env.RELEASE_REPO_DIR }}"
 
     - name: Resolve application information
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       env:
         projectFramework: "${{ inputs.project-framework }}"
         appDirectory: "${{ env.APP_REPO_DIR }}"
@@ -268,7 +268,7 @@ runs:
           await script();
 
     - name: Copy artifacts to branch
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       env:
         projectFramework: "${{ inputs.project-framework }}"
         appDirectory: "${{ env.APP_REPO_DIR }}"
@@ -291,7 +291,7 @@ runs:
         git commit --allow-empty -m "New release build [${{ env.RELEASE_NAME }}:${{ env.RELEASE_VERSION }}] from ${{ github.repository }}"
 
     - name: Push to release branch
-      uses: ad-m/github-push-action@v0.8.0
+      uses: ad-m/github-push-action@v1
       with:
         repository: "${{ inputs.release-branch-repository }}"
         branch: "${{ env.RELEASE_BRANCH }}"
@@ -300,7 +300,7 @@ runs:
 
     - name: Check if tag shall be created
       if: inputs.create-tag-enabled == 'true'
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       env:
         workingDirectory: "${{ env.APP_REPO_DIR }}"
         projectCommitish: "${{ inputs.commitish }}"
