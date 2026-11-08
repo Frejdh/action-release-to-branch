@@ -2,7 +2,7 @@
 Releases artifacts into a given branch
 
 ```
-Frejdh/action-release-to-branch@master
+Frejdh/action-release-to-branch@v3
 ```
 
 ## Supported frameworks/languages
@@ -90,7 +90,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Release artifacts
-        uses: Frejdh/action-release-to-branch@master
+        uses: Frejdh/action-release-to-branch@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           project-framework: ${{ inputs.project-framework || env.DEFAULT_FRAMEWORK }}
@@ -188,7 +188,7 @@ jobs:
     environment: ${{ inputs.environment || vars.RELEASE_ENV || 'release' }}
     steps:
       - name: Release artifacts
-        uses: Frejdh/action-release-to-branch@master
+        uses: Frejdh/action-release-to-branch@v3
         with:
           github-token: ${{ secrets.RELEASE_PAT_TOKEN }}
           project-framework: ${{ inputs.project-framework || env.DEFAULT_FRAMEWORK }}
@@ -300,7 +300,7 @@ jobs:
             echo "RELEASE_REPOSITORY=Frejdh/Frejdh-action-release-node-test-dev" >> $GITHUB_ENV
           fi
       - name: Build node project and push to GitHub pages repository
-        uses: Frejdh/action-release-to-branch@node-project-support
+        uses: Frejdh/action-release-to-branch@v3
         with:
           github-token: ${{ secrets.RELEASE_PAT_TOKEN || secrets.GITHUB_TOKEN }}
           project-framework: ${{ env.PROJECT_FRAMEWORK }}
