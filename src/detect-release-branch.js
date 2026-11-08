@@ -10,13 +10,13 @@ export default async function script() {
 		gradleBranch,
 		npmBranch,
 		pypiBranch,
-		nodeBranch
+		pagesBranch
 	} = process.env;
 
 	let releaseBranch = 'releases';
 	switch (projectFramework.toLowerCase()) {
 		case 'node':
-			releaseBranch = nodeBranch || releaseBranch;
+			releaseBranch = pagesBranch || releaseBranch;
 			break;
 		case 'maven':
 			releaseBranch = mavenBranch || 'maven';

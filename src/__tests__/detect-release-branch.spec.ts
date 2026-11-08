@@ -26,16 +26,16 @@ describe('Detect release branch', () => {
 		return exportVariable.mock.calls.at(-1)?.[1];
 	}
 
-	it('uses the configured branch for Node projects', async () => {
-		expect(await detectWith({ projectFramework: 'Node', nodeBranch: 'master' })).toBe('master');
+	it('uses the configured branch for GitHub Pages (Node) projects', async () => {
+		expect(await detectWith({ projectFramework: 'Node', pagesBranch: 'master' })).toBe('master');
 	});
 
-	it('falls back to the releases branch for Node projects without a configured branch', async () => {
-		expect(await detectWith({ projectFramework: 'Node', nodeBranch: '' })).toBe('releases');
+	it('falls back to the releases branch for GitHub Pages (Node) projects without a configured branch', async () => {
+		expect(await detectWith({ projectFramework: 'Node', pagesBranch: '' })).toBe('releases');
 	});
 
 	it('uses the branch of the matching framework only', async () => {
-		expect(await detectWith({ projectFramework: 'Maven', mavenBranch: 'maven-releases', nodeBranch: 'master' })).toBe('maven-releases');
+		expect(await detectWith({ projectFramework: 'Maven', mavenBranch: 'maven-releases', pagesBranch: 'master' })).toBe('maven-releases');
 	});
 
 });
