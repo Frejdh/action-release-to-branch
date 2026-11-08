@@ -250,7 +250,7 @@ runs:
 
     - name: Push new release branch to remote
       if: env.RELEASE_BRANCH_CREATED == 'true'
-      uses: ad-m/github-push-action@v1
+      uses: ad-m/github-push-action@881a6320fdb16eb5318c5054f31c218aec2b324c # v1.3.0
       with:
         repository: "${{ inputs.release-branch-repository }}"
         branch: "${{ env.RELEASE_BRANCH }}"
@@ -291,7 +291,7 @@ runs:
         git commit --allow-empty -m "New release build [${{ env.RELEASE_NAME }}:${{ env.RELEASE_VERSION }}] from ${{ github.repository }}"
 
     - name: Push to release branch
-      uses: ad-m/github-push-action@v1
+      uses: ad-m/github-push-action@881a6320fdb16eb5318c5054f31c218aec2b324c # v1.3.0
       with:
         repository: "${{ inputs.release-branch-repository }}"
         branch: "${{ env.RELEASE_BRANCH }}"
