@@ -1,7 +1,46 @@
-import { CopyContentEnv } from "../@types/environment";
-import { getTestResource } from "./util.spec";
-import * as Script from "../find-and-copy-content";
-import * as Cmd from "../util/cmd";
+import type { ExecOptions } from "@actions/exec";
+import { afterAll, beforeEach, describe, expect, it, jest } from "@jest/globals";
+import { readdirSync } from "node:fs";
+import type { CopyContentEnv } from "../@types/environment.js";
+import { getTestResource } from "./test-util.js";
+
+interface ExecutedCommand {
+	readonly command: string;
+	readonly args: readonly string[];
+	readonly cwd: string | undefined;
+}
+
+const executedCommands: ExecutedCommand[] = [];
+
+function listFilesRecursively(directory: string): string[] {
+	return readdirSync(directory, { recursive: true, withFileTypes: true })
+		.filter(entry => entry.isFile())
+		.map(entry => `${entry.parentPath.replaceAll('\\', '/')}/${entry.name}`);
+}
+
+/**
+ * Fakes the output of the shell commands whose output the scripts read. Other commands print nothing.
+ */
+function fakeCommandOutput(command: string, args: readonly string[]): string {
+	switch (command) {
+		case 'readlink':
+			return args.at(-1) ?? '';
+		case 'find':
+			return listFilesRecursively(args[0] ?? '.').join('\n');
+		default:
+			return '';
+	}
+}
+
+jest.unstable_mockModule('@actions/exec', () => ({
+	exec: jest.fn(async (command: string, args: string[] = [], options?: ExecOptions): Promise<number> => {
+		executedCommands.push({ command, args, cwd: options?.cwd });
+		options?.listeners?.stdout?.(Buffer.from(fakeCommandOutput(command, args)));
+		return 0;
+	}),
+}));
+
+const { default: findAndCopyContent } = await import("../find-and-copy-content.js");
 
 describe('Find and copy artifacts', () => {
 
@@ -10,15 +49,12 @@ describe('Find and copy artifacts', () => {
 
 	const ORIGINAL_ENV = process.env;
 	beforeEach(() => {
-		jest.resetModules();
+		executedCommands.length = 0;
 		process.env = { ...ORIGINAL_ENV };
 	});
 	afterAll(() => {
 		process.env = ORIGINAL_ENV;
 	});
-
-	let framework = spyOn(Script, 'getFramework').and.callThrough(); // NOSONAR
-	let execAndGetOutput = spyOn(Cmd, 'execAndGetOutput').and.returnValue(Promise.resolve('OUTPUT')); // NOSONAR
 
 	function modifyEnv(env: CopyContentEnv): void {
 		process.env = {
@@ -27,17 +63,16 @@ describe('Find and copy artifacts', () => {
 		};
 	}
 
-	async function runScript(): Promise<void> {
-		Script.default();
-	}
-
 	describe('Node', () => {
+
+		const appDirectory = getTestResource('node', APP_REPO);
+		const releaseDirectory = getTestResource('node', REL_REPO);
 
 		beforeEach(() => {
 			modifyEnv({
 				projectFramework: 'node',
-				appDirectory: getTestResource('node', APP_REPO),
-				releaseDirectory: getTestResource('node', REL_REPO),
+				appDirectory,
+				releaseDirectory,
 				releaseBranch: 'test-release',
 				projectCommitish: 'master',
 				nodeBuildTargetDir: 'dist',
@@ -46,8 +81,18 @@ describe('Find and copy artifacts', () => {
 			});
 		});
 
-		it('success', async () => {
-			await runScript();
+		it('checks out both branches and copies the build output to the release repository', async () => {
+			await findAndCopyContent();
+
+			const gitAndCopyCommands = executedCommands.filter(({ command }) => command === 'git' || command === 'cp');
+			expect(gitAndCopyCommands).toEqual([
+				{ command: 'git', args: ['checkout', 'master'], cwd: appDirectory },
+				{ command: 'git', args: ['checkout', 'test-release'], cwd: releaseDirectory },
+				expect.objectContaining({
+					command: 'cp',
+					args: [`${appDirectory}/dist/index.html`, `${releaseDirectory}/index.html`]
+				}),
+			]);
 		});
 
 	});
