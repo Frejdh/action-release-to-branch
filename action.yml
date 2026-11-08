@@ -89,8 +89,8 @@ inputs:
 #    type: boolean
 
   ### Node Options
-  release-branch-name-node:
-    description: Release branch name for built Node content
+  release-branch-name-pages:
+    description: Release branch name for the built Node content deployed to GitHub Pages
     required: false
 
   node-build-script:
@@ -224,6 +224,7 @@ runs:
         gradleBranch: "${{ inputs.release-branch-name-gradle || inputs.release-branch-name }}"
         npmBranch: "${{ inputs.release-branch-name-npm || inputs.release-branch-name }}"
         pypiBranch: "${{ inputs.release-branch-name-pypi || inputs.release-branch-name }}"
+        pagesBranch: "${{ inputs.release-branch-name-pages || inputs.release-branch-name }}"
       with:
         script: |
           const { default: script } = await import("${{ github.action_path }}/src/detect-release-branch.js");
