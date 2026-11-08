@@ -4,6 +4,7 @@ export interface DetectBranchEnv {
 	gradleBranch?: string;
 	npmBranch?: string;
 	pypiBranch?: string;
+	nodeBranch?: string;
 }
 
 export interface DetectVersionEnv {

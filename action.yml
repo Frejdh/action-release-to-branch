@@ -224,6 +224,7 @@ runs:
         gradleBranch: "${{ inputs.release-branch-name-gradle || inputs.release-branch-name }}"
         npmBranch: "${{ inputs.release-branch-name-npm || inputs.release-branch-name }}"
         pypiBranch: "${{ inputs.release-branch-name-pypi || inputs.release-branch-name }}"
+        nodeBranch: "${{ inputs.release-branch-name-node || inputs.release-branch-name }}"
       with:
         script: |
           const { default: script } = await import("${{ github.action_path }}/src/detect-release-branch.js");
