@@ -1,3 +1,5 @@
+import { asBoolean } from "./convert.js";
+
 /**
  * Get the current environment.
  * @return {Env}
@@ -26,5 +28,5 @@ export function getNodeFilesToKeepPatterns() {
  * @return {boolean}
  */
 export function shouldDeleteOldNodeFiles() {
-	return getEnv().deleteOldNodeFiles ?? true;
+	return asBoolean(getEnv().deleteOldNodeFiles);
 }
