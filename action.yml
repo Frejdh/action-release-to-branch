@@ -130,7 +130,7 @@ runs:
         git config --global user.name "github-actions[bot]"
 
         if [ -z "${{ inputs.github-token }}" ]; then
-          echo "Error: github-token input is required and must not be empty."
+          echo "Error: github-token input is required and must not be empty." >&2
           exit 1
         fi
 
