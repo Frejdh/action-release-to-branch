@@ -17,5 +17,5 @@ jobs:
         with:
           node-version: 24  # The runtime of actions/github-script, which runs the scripts
           cache: npm
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm test
