@@ -19,3 +19,23 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npm test
+
+  committed-dependencies:
+    name: Committed runtime dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --omit=dev --ignore-scripts
+      # The action uses node_modules from the repository as is, so a clean install must not change it
+      - name: Verify node_modules matches a clean install
+        run: |
+          changes="$(git status --porcelain --untracked-files=all -- node_modules ':!node_modules/.package-lock.json')"
+          if [ -n "$changes" ]; then
+            echo "::error::Committed node_modules differs from a clean production install. Commit these changes:"
+            echo "$changes"
+            exit 1
+          fi
