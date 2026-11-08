@@ -95,6 +95,22 @@ describe('Find and copy artifacts', () => {
 			]);
 		});
 
+		it('keeps old files in the release repository when deleting them is disabled', async () => {
+			await findAndCopyContent();
+
+			expect(executedCommands.filter(({ command }) => command === 'rm')).toEqual([]);
+		});
+
+		it('deletes old files in the release repository that match no keep pattern when deleting them is enabled', async () => {
+			modifyEnv({ deleteOldNodeFiles: 'true' });
+
+			await findAndCopyContent();
+
+			expect(executedCommands.filter(({ command }) => command === 'rm')).toEqual([
+				expect.objectContaining({ args: [`${releaseDirectory}/.gitkeep`] }),
+			]);
+		});
+
 	});
 
 });
