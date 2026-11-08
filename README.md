@@ -205,6 +205,10 @@ jobs:
 Builds a Node project, such as an Angular app, and pushes the built files to a separate GitHub Pages repository per deployment environment.
 Pushing to another repository requires a personal access token (PAT), stored as an environment secret.
 
+A fine-grained token can only access repositories owned by one user or organization, its resource owner.
+If the source or a GitHub Pages repository is owned by another user, such as a repository you're only a collaborator on, use a classic token
+with the `repo` scope instead, as in [example 2](#example-2-release-in-another-repository).
+
 1. Go to https://github.com/settings/personal-access-tokens and generate a fine-grained token.
 2. Under `Repository access`, select the source repository and every GitHub Pages repository the workflow pushes to. The token also checks out the source repository, so it needs access to it as well.
 3. Under `Permissions`, set `Contents` to `Read and write`.
